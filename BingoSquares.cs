@@ -186,5 +186,73 @@
             bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
             return flag;
         }
+
+        public static bool IsGodskinNobleKilledWithousStatus()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            long currentboss = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentboss);
+            bool check = false;
+            while (currentboss == ERConstants.GODSKIN_NOBLE_VOLCANO_PARAM_ID)
+            {
+                currentboss = er.ReadInt(bossaddr);
+                check = constants.IsStatusEffectUsed(currentbossaddr);
+                if (check)
+                {
+                    return false;
+                }
+                else if (constants.IsBossDeadAF(currentbossaddr))
+                {
+                    Console.WriteLine("Noble was killed without status effects");
+                    return true;
+                }
+                Thread.Sleep(1000);
+            }
+            return false;
+        }
+
+
+        public static bool IsMargitKilledWithParries()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            long currentboss = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentboss);
+            bool check = false;
+            int parry_count = 0;
+            int currentAnimation;
+            while (currentboss == ERConstants.MARGIT_PARAM_ID)
+            {
+                currentboss = er.ReadInt(bossaddr);
+                currentAnimation = constants.GetEnemyCurrentAnim(currentbossaddr);
+                if (currentAnimation == ERConstants.MARGIT_PARRY_ANIM1 || currentAnimation == ERConstants.MARGIT_PARRY_ANIM2)
+                {
+                    parry_count ++;
+                    Console.WriteLine(parry_count);
+                    while (currentAnimation == ERConstants.MARGIT_PARRY_ANIM1 || currentAnimation == ERConstants.MARGIT_PARRY_ANIM2)
+                    {
+                        currentAnimation = constants.GetEnemyCurrentAnim(currentbossaddr);
+                        Thread.Sleep(1000);
+                    }
+
+                }
+                if (constants.IsBossDeadAF(currentbossaddr))
+                {
+                    if (parry_count >= 4)
+                    {
+                        Console.WriteLine("Margit was killed with 4+ parries");
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("You killed him without parries");
+                        return false;
+                    }
+
+                }
+                Thread.Sleep(100);
+            }
+            return false;
+        }
+
     }
 }
