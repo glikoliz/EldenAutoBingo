@@ -373,6 +373,35 @@ namespace Elden_Ring_Auto_Bingo
             return false;
         }
 
+        public static bool MimicConsumablesOnly()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            long currentboss = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentboss);
+            int currentanim = er.ReadInt(constants.GetPlayerAnim());
+            long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
 
+            while (currentboss == ERConstants.MIMIC_PARAM_ID)
+            {
+                currentboss = er.ReadInt(bossaddr);
+                currentanim = er.ReadInt(constants.GetPlayerAnim());
+                if (currentanim >= 20000000 && currentanim <= 900000000)
+                {
+                    if ((currentanim / 10000) % 10 == 3 || (currentanim / 1000) % 100 == 45)
+                    {
+                        Console.WriteLine("No consumable");
+                        Thread.Sleep(1000);
+                        return false;
+                    }
+                }
+                if(er.ReadByte(isdeadaddr) == 1)
+                {
+                    Console.WriteLine("Mimic killed");
+                    return true;
+                }
+                Thread.Sleep(500);
+            }
+            return true;
+        }
     }
 }
