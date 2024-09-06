@@ -71,9 +71,13 @@ namespace Elden_Ring_Auto_Bingo
         {
             return er.ReadInt(er.GetOffsets(enemyaddr, [0x190, 0x18, 0x40]));
         }
-        public bool IsBossDeadAF(long bossaddr)
+        public byte GetNpcAlliance(long addr)
         {
-            return er.ReadByte(er.GetOffsets(bossaddr, [0x58, 0xC8, 0x24])) == 1;
+            return er.ReadByte(er.GetOffsets(addr, [0x6C]));
+        }
+        public long IsBossDeadAddr(long bossaddr)
+        {
+            return er.GetOffsets(bossaddr, [0x58, 0xC8, 0x24]);
 
         }
         public bool IsStatusEffectUsed(long boss_id)
@@ -97,7 +101,7 @@ namespace Elden_Ring_Auto_Bingo
             long chrset = GetChrSet();
             for (int i = 0; i < chr_count; i++)
             {
-                enemyaddr = er.ReadLong(chrset + i * 0x10);
+                enemyaddr = er.ReadLong(chrset + i * 8);
                 int paramid = er.ReadInt(enemyaddr + 0x60);
                 if (paramid == enemyid)
                 {
@@ -106,8 +110,16 @@ namespace Elden_Ring_Auto_Bingo
             }
             return 0;
         }
+
         public const int MARGIT_PARAM_ID = 21300014;
+        public const int GODRICK_PARAM_ID = 47500014;
         public const int GODSKIN_NOBLE_VOLCANO_PARAM_ID = 35700038;
+        public const int RENALLA_PARAM_ID = 20310024;
+        public const int RADAHN_PARAM_ID = 47300040;
+
+
+
+        public const int NEPHELI_PARAM_ID = 533340014;
 
         public const int MARGIT_PARRY_ANIM1 = 2008500;
         public const int MARGIT_PARRY_ANIM2 = 2020015;
