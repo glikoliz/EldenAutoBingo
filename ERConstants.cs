@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Diagnostics;
-
-namespace Elden_Ring_Auto_Bingo
+﻿namespace Elden_Ring_Auto_Bingo
 {
     public class ERConstants
     {
@@ -63,7 +59,7 @@ namespace Elden_Ring_Auto_Bingo
         {
             return er.GetOffsets(enemyaddr, [0x190, 0x20, 0x10]);
         }
-        public long GetEnemyHP(long enemyaddr)
+        public int GetEnemyHP(long enemyaddr)
         {
             return er.ReadInt(er.GetOffsets(enemyaddr, [0x190, 0, 0x138]));
         }
@@ -74,6 +70,30 @@ namespace Elden_Ring_Auto_Bingo
         public byte GetNpcAlliance(long addr)
         {
             return er.ReadByte(er.GetOffsets(addr, [0x6C]));
+        }
+        public int GetCurrentWeaponId()
+        {
+            long addr = er.GetOffsets(er.ReadLong(er.ERProcess.MainModule.BaseAddress + 0x03D63418), [0x40, 0x10, 0, 0x10, 0x1F0]);
+            return er.ReadInt(addr);
+        }
+        public bool FindExplosiveFlaskEffect()
+        {
+            long worldchrman = er.ReadLong(GetWorldchrman());
+            long addr = er.ReadLong(worldchrman + 0x10EF8);
+            addr = er.ReadLong(addr);
+            addr = er.ReadLong(addr + 0x178);
+            addr = er.ReadLong(addr + 0x8);
+            for (int i = 0; i < 15; i++)
+            {
+                addr = er.ReadLong(addr + 0x30);
+                if (addr == 0)
+                    break;
+                //Console.WriteLine((addr+8).ToString("X8"));
+                int effect = er.ReadInt(addr + 8);
+                if (effect == 511074 || effect == 511075 || effect == 511080)
+                    return true;
+            }
+            return false;
         }
         public long IsBossDeadAddr(long bossaddr)
         {
@@ -116,7 +136,10 @@ namespace Elden_Ring_Auto_Bingo
         public const int GODSKIN_NOBLE_VOLCANO_PARAM_ID = 35700038;
         public const int RENALLA_PARAM_ID = 20310024;
         public const int RADAHN_PARAM_ID = 47300040;
-
+        public const int MIMIC_PARAM_ID = 526100965;
+        public const int SOLDIER_OF_GOD_PARAM_ID = 43113906;
+        public const int LIMGRAVE_TREE_SENTINTEL_PARAM_ID = 32510010;
+        public const int AGHEEL_PARAM_ID = 45000010;
 
 
         public const int NEPHELI_PARAM_ID = 533340014;
