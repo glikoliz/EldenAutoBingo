@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace Elden_Ring_Auto_Bingo
+﻿namespace Elden_Ring_Auto_Bingo
 {
     public static class BingoSquares
     {
@@ -221,8 +219,6 @@ namespace Elden_Ring_Auto_Bingo
             }
             return false;
         }
-
-
         public static bool MargitKilledWithParries()
         {
             long bossaddr = constants.GetCurrentBoss();
@@ -348,7 +344,7 @@ namespace Elden_Ring_Auto_Bingo
             //533090040 Patches
             //20109140 Blaidd
             long[] npcAdressess = new long[npcs.Length];
-            for (int i = 0; i<npcs.Length;i++)
+            for (int i = 0; i < npcs.Length; i++)
             {
                 npcAdressess[i] = constants.FindAddrById(npcs[i]);
             }
@@ -372,7 +368,6 @@ namespace Elden_Ring_Auto_Bingo
             }
             return false;
         }
-
         public static bool MimicConsumablesOnly()
         {
             long bossaddr = constants.GetCurrentBoss();
@@ -394,7 +389,7 @@ namespace Elden_Ring_Auto_Bingo
                         return false;
                     }
                 }
-                if(er.ReadByte(isdeadaddr) == 1)
+                if (er.ReadByte(isdeadaddr) == 1)
                 {
                     Console.WriteLine("Mimic killed");
                     return true;
@@ -403,5 +398,253 @@ namespace Elden_Ring_Auto_Bingo
             }
             return true;
         }
+        public static bool KilledWithFlask()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            while (currentbossid != 0)
+            {
+                currentbossid = er.ReadInt(bossaddr);
+                bool explosive = constants.FindExplosiveFlaskEffect();
+                int prevbosshp = constants.GetEnemyHP(currentbossaddr);
+                while (explosive)
+                {
+                    explosive = constants.FindExplosiveFlaskEffect();
+                    Thread.Sleep(1000);
+                    int bosshp = constants.GetEnemyHP(currentbossaddr);
+                    if (prevbosshp > 0 && bosshp == 0)
+                    {
+                        Console.WriteLine("Killed with flask");
+                        return true;
+                    }
+                }
+                Thread.Sleep(1000);
+            }
+            return false;
+        }
+        public static bool SoldierOfGodBareFist()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            int currentanim;
+            long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
+
+            while (currentbossid == ERConstants.SOLDIER_OF_GOD_PARAM_ID)
+            {
+                currentbossid = er.ReadInt(bossaddr);
+                currentanim = er.ReadInt(constants.GetPlayerAnim());
+                if (currentanim >= 20000000 && currentanim <= 900000000)
+                {
+                    if ((currentanim / 10000) % 10 == 3 || (currentanim / 1000) % 100 == 45)
+                    {
+                        if(currentanim / 10000 != 4203)
+                        {
+                            Console.WriteLine("YOU LOSE");
+                            return false;
+                        }
+                        Thread.Sleep(1000);
+                    }
+                }
+                if (er.ReadByte(isdeadaddr) == 1)
+                {
+                    Console.WriteLine("GOD killed");
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool TreeSentintel0Weapon()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
+            int current_weapon;
+            Thread.Sleep(5000);
+            while (currentbossid == ERConstants.LIMGRAVE_TREE_SENTINTEL_PARAM_ID)
+            {
+                currentbossid = er.ReadInt(bossaddr);
+                current_weapon = constants.GetCurrentWeaponId();
+                if(current_weapon % 100 != 0)
+                {
+                    Console.WriteLine("NOT +0");
+                    return false;
+                }
+                if (er.ReadByte(isdeadaddr) == 1)
+                {
+                    Console.WriteLine("Tree Sentinel killed");
+                    return true;
+                }
+                Thread.Sleep(2000);
+            }
+            return false;
+        }
+        public static bool Agheel0Weapon()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
+            int current_weapon;
+            Thread.Sleep(5000);
+            while (currentbossid == ERConstants.AGHEEL_PARAM_ID)
+            {
+                currentbossid = er.ReadInt(bossaddr);
+                current_weapon = constants.GetCurrentWeaponId();
+                if (current_weapon % 100 != 0)
+                {
+                    Console.WriteLine("NOT +0");
+                    return false;
+                }
+                if (er.ReadByte(isdeadaddr) == 1)
+                {
+                    Console.WriteLine("Agheel killed");
+                    return true;
+                }
+                Thread.Sleep(2000);
+            }
+            return false;
+        }
+
+        public static bool DeathBirdsDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] deathBirds = [0xA0E1F, 0xB0B0D, 0x77033, 0xB52D4];
+            int[] deathRiteBirds = [0x6F1BC, 0xE94D0, 0xD8360];
+            int count = 0b00;
+            long boss;
+            foreach (var addr in deathBirds)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                {
+                    count |= 0b10;
+                    break;
+                }
+            }
+            foreach (var addr in deathRiteBirds)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                {
+                    count |= 0b01;
+                    break;
+                }
+            }
+            boss = baseAddr+0xDC7C2;
+            if ((er.ReadByte(boss) & (1 << 5)) != 0)
+                count |= 0b01;
+
+            if (count==0b11)
+                return true;
+
+            return false;
+        }
+        public static bool CemeteryShadesDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] shades = [0x167BC3, 0x1691BC, 0x16BDAE];
+            int count = 0;
+            long boss;
+            foreach (var addr in shades)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                    count ++;
+            }
+
+            if (count >= 2)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+            Console.WriteLine("NO");
+            return false;
+        }
+        public static bool WatchdogsDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0x16848D, 0x168028, 0x169621, 0x169A86, 0x16B949];
+            int count = 0;
+            long boss;
+            foreach (var addr in bosses)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                {
+                    if (addr == 0x16B949) //2 dogs here
+                        count++;
+                    count++;
+                }
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+            Console.WriteLine("NO");
+            return false;
+        }
+        public static bool DuelistsDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0x17577D, 0x168D57, 0x16B4E4, 0x16CF42];
+            int count = 0;
+            long boss;
+            foreach (var addr in bosses)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                    count++;
+            }
+
+            if (count >= 2)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+            Console.WriteLine("NO");
+            return false;
+        }
+        public static bool BlackAssassinsDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag+0x28);
+
+            int[] bosses = [0x16AC1A, 0x174EB3, 0x92C89];
+            int count = 0;
+            long boss;
+            foreach (var addr in bosses)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                    count++;
+            }
+
+            boss = baseAddr + 0x1691C2;
+            if ((er.ReadByte(boss) & (1 << 5)) != 0)
+                count ++;
+
+            if (count >= 2)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            return false;
+        }
+
     }
 }
