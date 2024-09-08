@@ -135,6 +135,7 @@
             long firstboss = er.GetOffsets(eventflag, [0x28, 0x179DCD]); //Gael Tunnel
             long secondboss = er.GetOffsets(eventflag, [0x28, 0x6845C]); //Mt. Gelmir
             long thirdboss = er.GetOffsets(eventflag, [0x28, 0x15DD8F]); //Makar
+
             bool flag = ((er.ReadByte(firstboss) & (1 << 7)) != 0) ||
                 ((er.ReadByte(secondboss) & (1 << 7)) != 0) ||
                 ((er.ReadByte(thirdboss) & (1 << 7)) != 0);
@@ -439,7 +440,7 @@
                 {
                     if ((currentanim / 10000) % 10 == 3 || (currentanim / 1000) % 100 == 45)
                     {
-                        if(currentanim / 10000 != 4203)
+                        if (currentanim / 10000 != 4203)
                         {
                             Console.WriteLine("YOU LOSE");
                             return false;
@@ -467,7 +468,7 @@
             {
                 currentbossid = er.ReadInt(bossaddr);
                 current_weapon = constants.GetCurrentWeaponId();
-                if(current_weapon % 100 != 0)
+                if (current_weapon % 100 != 0)
                 {
                     Console.WriteLine("NOT +0");
                     return false;
@@ -535,11 +536,11 @@
                     break;
                 }
             }
-            boss = baseAddr+0xDC7C2;
+            boss = baseAddr + 0xDC7C2;
             if ((er.ReadByte(boss) & (1 << 5)) != 0)
                 count |= 0b01;
 
-            if (count==0b11)
+            if (count == 0b11)
                 return true;
 
             return false;
@@ -556,7 +557,7 @@
             {
                 boss = baseAddr + addr;
                 if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                    count ++;
+                    count++;
             }
 
             if (count >= 2)
@@ -620,7 +621,7 @@
         public static bool BlackAssassinsDead()
         {
             long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag+0x28);
+            long baseAddr = er.ReadLong(eventflag + 0x28);
 
             int[] bosses = [0x16AC1A, 0x174EB3, 0x92C89];
             int count = 0;
@@ -634,7 +635,7 @@
 
             boss = baseAddr + 0x1691C2;
             if ((er.ReadByte(boss) & (1 << 5)) != 0)
-                count ++;
+                count++;
 
             if (count >= 2)
             {
@@ -645,6 +646,261 @@
             Console.WriteLine("NO");
             return false;
         }
+        public static bool CrucibleKnightsDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
 
+            int[] bosses = [0x151C0D, 0x1550C1, 0x1550C0, 0x1573D7, 0x1573D8, 0xED5C1, 0xA0AB4, 0x16A7B5, 0x155520, 0x152DA1, 0x152DA0, 0x159F49];
+            int[] bytes = [5, 5, 1, 0, 7, 7, 7, 7, 1, 7, 0, 7];
+            int count = 0;
+            long boss;
+            for (int i = 0; i < bosses.Length; i++)
+            {
+                boss = baseAddr + bosses[i];
+                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
+                {
+                    //Console.WriteLine(bosses[i].ToString("X8"));
+                    if (bosses[i] == 0x16A7B5) //2 knights here
+                        count++;
+                    count++;
+                }
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            return false;
+
+            /* Замок 151C0D 5
+             * Нокрон 1550C1 5
+             * Горгульи 1550C0 1
+             * Фарум 1573D7 0
+             * Фарум 1573D8 7
+             * ED5C1 7
+             * A0AB4 7
+             * 16A7B5 7  tut dwa
+             * 155520 1
+             * 152DA1 7
+             * 152DA0 0
+             * 159F49 7
+             */
+        }
+        public static bool DragonHeartsDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0xA9001, 0xD3F04, 0xF6F90, 0x179DCD, 0x6845C, 0x15DD8F, 0x5D60B, 0x5E04C, 0x1AA7A2, 0xE9165];
+            int count = 0;
+            long boss;
+            foreach (var addr in bosses)
+            {
+                boss = baseAddr + addr;
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                    count++;
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            return false;
+            /* A9001 7
+             * D3F04 7
+             * F6F90 7
+             * 179DCD 7
+             * 6845C 7
+             * 159B80 7 vulkan ////
+             * 15DD8F 7 makar
+             * 5D60B 7
+             * 5E04C 7
+             * 1AA7A2 7
+             * E9165 7
+             */
+        }
+        public static bool ErdtreeAvatarDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0xA85C0, 0x80D6D, 0x550BE, 0xFA2D5, 0x155520, 0x152D93];
+            int[] bytes = [7, 7, 7, 7, 0, 2];
+            int count = 0;
+            long boss;
+            for (int i = 0; i < bosses.Length; i++)
+            {
+                boss = baseAddr + bosses[i];
+                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
+                    count++;
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            /* A85C0 7
+             * 80D6D 7
+             * 550BE 7
+             * FA2D5 7
+             * 155520 0
+             * 152D93 2
+             */
+            return false;
+        }
+        public static bool NightCavalryDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0xA936C, 0x158146, 0x8850E, 0xDC7BC, 0x8A066, 0xD6EDE, 0x1ABD9B, 0xF6F96, 0xB0B13];
+            int[] bytes = [7, 7, 7, 7, 7, 7, 7, 5, 5];
+            int count = 0;
+            long boss;
+            for (int i = 0; i < bosses.Length; i++)
+            {
+                boss = baseAddr + bosses[i];
+                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
+                {
+                    if (bosses[i] == 0x1ABD9B)
+                        count++;
+                    count++;
+                }
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            /* A936C 7
+             * 158146 7
+             * 8850E 7
+             * DC7BC 7
+             * 8A066 7
+             * D6EDE 7
+             * 1ABD9B 7 //two
+             * F6F96 5
+             * B0B13 5
+             */
+            return false;
+        }
+        public static bool TibiaMarinerDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0xBABB2, 0x88879, 0x81B19, 0xF1D58];
+            int[] bytes = [7, 7, 7, 2];
+            int count = 0;
+            long boss;
+            for (int i = 0; i < bosses.Length; i++)
+            {
+                boss = baseAddr + bosses[i];
+                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
+                    count++;
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+
+            /* BABB2 7
+             * 88879 7
+             * 81B19 7
+             * F1D58 2
+             */
+            return false;
+        }
+        public static bool BellBearingDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0xA0E25, 0x77DDF, 0xACA1C, 0xD4CB0];
+            int count = 0;
+            long boss;
+            for (int i = 0; i < bosses.Length; i++)
+            {
+                boss = baseAddr + bosses[i];
+                if ((er.ReadByte(boss) & (1 << 7)) != 0)
+                    count++;
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+
+            return false;
+        }
+        public static bool DuoTrioDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+
+            int[] bosses = [0x1ABD9B, 0x16B949, 0x16B07F, 0xDCE92, 0xD4945, 0x1719F7, 0x172FF0, 0x179968, 0x9B1D6, 0xED5C1,
+                0x171E5C, 0x16A7B5, 0x1550EF, 0x175318, 0x174A4E, 0x175BE2, 0x155554, 0x174184, 0x15741D, 0x163579, 0x159BAB];
+            int[] bytes = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 3];
+
+            int count = 0;
+            long boss;
+            for (int i = 0; i < bosses.Length; i++)
+            {
+                boss = baseAddr + bosses[i];
+                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
+                    count++;
+            }
+
+            if (count >= 3)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            /* 1ABD9B 7
+             * 16B949 7
+             * 16B07F 7 Perfumer and warrior
+             * DCE92 7
+             * D4945 7
+             * 1719F7 7
+             * 172FF0 7 Trio Crystalian
+             * 179968 7 Crystalian Duo
+             * 9B1D6 7 Tree sentinels duo
+             * ED5C1 7
+             * 171E5C 7
+             * 16A7B5 7
+             * 1550EF 7 
+             * 175318 7
+             * 174A4E 7 Omenkiller and miranda
+             * 175BE2 7 Fake godskin duo
+             * 155554 7
+             * 174184 7
+             * 15741D 5
+             * 163579 5
+             * 159BAB 3
+             */
+            return false;
+        }
     }
 }
