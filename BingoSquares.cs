@@ -429,24 +429,17 @@
             long bossaddr = constants.GetCurrentBoss();
             int currentbossid = er.ReadInt(bossaddr);
             long currentbossaddr = constants.FindAddrById(currentbossid);
-            int currentanim;
             long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
+            int current_weapon;
 
             while (currentbossid == ERConstants.SOLDIER_OF_GOD_PARAM_ID)
             {
                 currentbossid = er.ReadInt(bossaddr);
-                currentanim = er.ReadInt(constants.GetPlayerAnim());
-                if (currentanim >= 20000000 && currentanim <= 900000000)
+                current_weapon = constants.GetCurrentWeaponId();
+                if (current_weapon != 110000)
                 {
-                    if ((currentanim / 10000) % 10 == 3 || (currentanim / 1000) % 100 == 45)
-                    {
-                        if (currentanim / 10000 != 4203)
-                        {
-                            Console.WriteLine("YOU LOSE");
-                            return false;
-                        }
-                        Thread.Sleep(1000);
-                    }
+                    Console.WriteLine("NOT FISTS");
+                    return false;
                 }
                 if (er.ReadByte(isdeadaddr) == 1)
                 {
@@ -857,17 +850,38 @@
         {
             long eventflag = er.ReadLong(constants.GetEventflagman());
             long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0x1ABD9B, 0x16B949, 0x16B07F, 0xDCE92, 0xD4945, 0x1719F7, 0x172FF0, 0x179968, 0x9B1D6, 0xED5C1,
-                0x171E5C, 0x16A7B5, 0x1550EF, 0x175318, 0x174A4E, 0x175BE2, 0x155554, 0x174184, 0x15741D, 0x163579, 0x159BAB];
-            int[] bytes = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 3];
+            var bossesData = new (int Boss, int Bytes)[]
+            {
+                (0x1ABD9B, 7),
+                (0x16B949, 7),
+                (0x16B07F, 7),
+                (0xDCE92, 7),
+                (0xD4945, 7),
+                (0x1719F7, 7),
+                (0x172FF0, 7),
+                (0x179968, 7),
+                (0x9B1D6, 7),
+                (0xED5C1, 7),
+                (0x171E5C, 7),
+                (0x16A7B5, 7),
+                (0x1550EF, 7),
+                (0x175318, 7),
+                (0x174A4E, 7),
+                (0x175BE2, 7),
+                (0x155554, 7),
+                (0x174184, 7),
+                (0x15741D, 5),
+                (0x163579, 5),
+                (0x159BAB, 3)
+            };
 
             int count = 0;
             long boss;
-            for (int i = 0; i < bosses.Length; i++)
+
+            foreach (var (bossValue, bytes) in bossesData)
             {
-                boss = baseAddr + bosses[i];
-                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
+                boss = baseAddr + bossValue;
+                if ((er.ReadByte(boss) & (1 << bytes)) != 0)
                     count++;
             }
 
@@ -878,28 +892,214 @@
             }
 
             Console.WriteLine("NO");
-            /* 1ABD9B 7
-             * 16B949 7
-             * 16B07F 7 Perfumer and warrior
-             * DCE92 7
-             * D4945 7
-             * 1719F7 7
-             * 172FF0 7 Trio Crystalian
-             * 179968 7 Crystalian Duo
-             * 9B1D6 7 Tree sentinels duo
-             * ED5C1 7
-             * 171E5C 7
-             * 16A7B5 7
-             * 1550EF 7 
-             * 175318 7
-             * 174A4E 7 Omenkiller and miranda
-             * 175BE2 7 Fake godskin duo
-             * 155554 7
-             * 174184 7
-             * 15741D 5
-             * 163579 5
-             * 159BAB 3
-             */
+            return false;
+        }
+        public static bool HorseRidersDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+            var bossesData = new (int Boss, int Bytes)[]
+            {
+                (0x1A1B02, 7),
+                (0xA0749, 7),
+                (0x9B1D6, 7),
+                (0xA936C, 7),
+                (0x158146, 7),
+                (0x8850E, 7),
+                (0xDC7BC, 7),
+                (0x8A066, 7),
+                (0xD6EDE, 7),
+                (0x1ABD9B, 7),
+                (0x67A1B, 7),
+                (0xBD821, 7),
+                (0xF6F96, 5),
+                (0xB0B13, 5),
+                (0x158E7B, 5)
+            };
+
+            int count = 0;
+            foreach (var (boss, bytes) in bossesData)
+            {
+                long bossAddr = baseAddr + boss;
+                if ((er.ReadByte(bossAddr) & (1 << bytes)) != 0)
+                {
+                    if (boss == 0x9B1D6 || boss == 0x1ABD9B)
+                        count++;
+                    count++;
+                }
+            }
+
+            if (count >= 5)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            return false;
+        }
+        public static bool TreeBossesDead()
+        {
+            long eventflag = er.ReadLong(constants.GetEventflagman());
+            long baseAddr = er.ReadLong(eventflag + 0x28);
+            var bossesData = new (int Boss, int Bytes)[]
+            {
+                (0x16848D, 7),
+                (0x168028, 7),
+                (0x169621, 7),
+                (0x16B949, 7),
+                (0x169A86, 7),
+                (0xA0749, 7),
+                (0x9B1D6, 7),
+                (0x15B602, 7),
+                (0x16CADD, 7),
+                (0xA85C0, 7),
+                (0x80D6D, 7),
+                (0x550BE, 7),
+                (0xFA2D5, 5),
+                (0xBD821, 7),
+                (0x158E7B, 5),
+                (0x79938, 5)
+            };
+
+            int count = 0;
+            foreach (var (boss, bytes) in bossesData)
+            {
+                long bossAddr = baseAddr + boss;
+                if ((er.ReadByte(bossAddr) & (1 << bytes)) != 0)
+                {
+                    if (boss == 0x16B949 || boss == 0x9B1D6)
+                        count++;
+                    count++;
+                }
+            }
+
+            if (count >= 5)
+            {
+                Console.WriteLine("Yes");
+                return true;
+            }
+
+            Console.WriteLine("NO");
+            return false;
+        }
+        public static bool RemembranceBossHitless()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            bool isdead;
+            float damageRate = er.ReadFloat(constants.GetPlayerDamageRate());
+            float prevDamageRate = damageRate;
+            while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
+            {
+                damageRate = er.ReadFloat(constants.GetPlayerDamageRate());
+                currentbossid = er.ReadInt(bossaddr);
+                if (currentbossid != 0)
+                    currentbossaddr = constants.FindAddrById(currentbossid);
+                isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
+                if(damageRate!=prevDamageRate && damageRate!=0)
+                {
+                    Console.WriteLine("Hit");
+                    Thread.Sleep(1000);
+                    return false;
+                }
+                if (isdead)
+                {
+                    Console.WriteLine("Killed hitless");
+                    return true;
+                }
+                Console.WriteLine(isdead);
+                Thread.Sleep(500);
+
+            }
+            return false;
+        }
+        public static bool RemembranceCollosalWeapon()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            bool isdead;
+            int current_weapon;
+            Thread.Sleep(5000);
+            while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
+            {
+                current_weapon = constants.GetCurrentWeaponId();
+                currentbossid = er.ReadInt(bossaddr);
+                if (currentbossid != 0)
+                    currentbossaddr = constants.FindAddrById(currentbossid);
+                isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
+                if (current_weapon / 1000000 != 23)
+                {
+                    Console.WriteLine("NOT COLLOSAL");
+                    return false;
+                }
+                if (isdead)
+                {
+                    Console.WriteLine("Boss killed");
+                    return true;
+                }
+                Thread.Sleep(1000);
+            }
+            return false;
+        }
+        public static bool RemembranceDaggersFists()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            bool isdead;
+            int current_weapon;
+            Thread.Sleep(5000);
+            while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
+            {
+                current_weapon = constants.GetCurrentWeaponId();
+                currentbossid = er.ReadInt(bossaddr);
+                if (currentbossid != 0)
+                    currentbossaddr = constants.FindAddrById(currentbossid);
+                isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
+                if (current_weapon / 1000000 != 1 && current_weapon / 1000000 != 22 && current_weapon!=110000)
+                {
+                    Console.WriteLine("NOT Daggers/claws");
+                    return false;
+                }
+                if (isdead)
+                {
+                    Console.WriteLine("Boss killed");
+                    return true;
+                }
+                Thread.Sleep(1000);
+            }
+            return false;
+        }
+        public static bool RemembranceBowOnly()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            bool isdead;
+            int current_weapon;
+            Thread.Sleep(5000);
+            while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
+            {
+                current_weapon = constants.GetCurrentWeaponId();
+                currentbossid = er.ReadInt(bossaddr);
+                if (currentbossid != 0)
+                    currentbossaddr = constants.FindAddrById(currentbossid);
+                isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
+                if (current_weapon / 1000000 != 40 && current_weapon / 1000000 != 41 && current_weapon /1000000 != 42)
+                {
+                    Console.WriteLine("NOT bow");
+                    return false;
+                }
+                if (isdead)
+                {
+                    Console.WriteLine("Boss killed");
+                    return true;
+                }
+                Thread.Sleep(1000);
+            }
             return false;
         }
     }
