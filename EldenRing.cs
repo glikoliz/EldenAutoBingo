@@ -7,7 +7,7 @@ namespace Elden_Ring_Auto_Bingo
     public class ERMemoryReader
     {
         [Flags]
-        public enum ProcessAccessFlags : int
+        public enum ProcessAccessFlags : uint
         {
             All = 0x001F0FFF
         }
@@ -22,32 +22,54 @@ namespace Elden_Ring_Auto_Bingo
         public static extern bool CloseHandle(IntPtr hObject);
 
         private IntPtr processHandle;
-        private long baseAddress;
-        private Process erProcess;
+        private ERProcessMonitor processMonitor;
 
-        public ERMemoryReader()
+        public event EventHandler? ProcessChanged;
+
+        public ERMemoryReader(ERProcessMonitor monitor)
         {
-            erProcess = Process.GetProcessesByName("eldenring")[0];
-            processHandle = OpenProcess(ProcessAccessFlags.All, false, erProcess.Id);
-            baseAddress = erProcess.MainModule.BaseAddress.ToInt64();
+            processMonitor = monitor;
+            processMonitor.ProcessChanged += OnProcessChanged;
+            UpdateProcessHandle();
+            processMonitor.Update();
         }
 
-        public Process ERProcess
+        private void OnProcessChanged(object? sender, EventArgs e)
         {
-            get { return erProcess; }
+            UpdateProcessHandle();
+            ProcessChanged?.Invoke(this, EventArgs.Empty);
         }
+
+        private void UpdateProcessHandle()
+        {
+
+            if (processHandle != IntPtr.Zero)
+                CloseHandle(processHandle);
+            if (processMonitor.CurrentProcess != null)
+                processHandle = OpenProcess(ProcessAccessFlags.All, false, processMonitor.CurrentProcess.Id);
+            else
+                processHandle = IntPtr.Zero;
+        }
+
+        public bool IsValid => processHandle != IntPtr.Zero;
+
+        public Process? ERProcess => processMonitor.CurrentProcess;
 
         public byte[] ReadBytes(long address, uint size)
         {
+            if (!IsValid) return Array.Empty<byte>();
+
             byte[] buffer = new byte[size];
             int bytesRead = 0;
             ReadProcessMemory(processHandle, address, buffer, size, out bytesRead);
-            
+
             return buffer;
         }
 
         public byte ReadByte(long address)
         {
+            if (!IsValid) return 0;
+
             byte[] buffer = new byte[1];
             int bytesRead = 0;
             ReadProcessMemory(processHandle, address, buffer, 1, out bytesRead);
@@ -57,6 +79,8 @@ namespace Elden_Ring_Auto_Bingo
 
         public int ReadInt(long address)
         {
+            if (!IsValid) return 0;
+
             byte[] buffer = new byte[sizeof(int)];
             int bytesRead = 0;
             ReadProcessMemory(processHandle, address, buffer, sizeof(int), out bytesRead);
@@ -65,6 +89,8 @@ namespace Elden_Ring_Auto_Bingo
 
         public long ReadLong(long address)
         {
+            if (!IsValid) return 0;
+
             byte[] buffer = new byte[sizeof(long)];
             int bytesRead = 0;
             ReadProcessMemory(processHandle, address, buffer, sizeof(long), out bytesRead);
@@ -73,6 +99,8 @@ namespace Elden_Ring_Auto_Bingo
 
         public float ReadFloat(long address)
         {
+            if (!IsValid) return 0;
+
             byte[] buffer = new byte[sizeof(float)];
             int bytesRead = 0;
             ReadProcessMemory(processHandle, address, buffer, sizeof(float), out bytesRead);
@@ -81,17 +109,22 @@ namespace Elden_Ring_Auto_Bingo
 
         public long GetOffsets(long address, int[] offsets)
         {
+            if (!IsValid) return 0;
+
             long result = address;
 
             for (int i = 0; i < offsets.Length - 1; i++)
             {
                 result = ReadLong(result + offsets[i]);
+                if (result == 0) return 0;
             }
             return result + offsets[offsets.Length - 1];
         }
 
         public long FindPatternInModule(ProcessModule module, byte[] pattern)
         {
+            if (!IsValid) return 0;
+
             long moduleBase = module.BaseAddress.ToInt64();
             uint moduleSize = (uint)module.ModuleMemorySize;
 
@@ -121,7 +154,10 @@ namespace Elden_Ring_Auto_Bingo
 
         ~ERMemoryReader()
         {
-            CloseHandle(processHandle);
+            if (processHandle != IntPtr.Zero)
+            {
+                CloseHandle(processHandle);
+            }
         }
     }
 }
