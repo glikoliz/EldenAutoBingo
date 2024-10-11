@@ -2,199 +2,264 @@
 {
     public static class BingoSquares
     {
-        private static ERMemoryReader er;
-        private static ERConstants constants;
+        private static ERMemoryReader er = new ERMemoryReader(new ERProcessMonitor());
+        private static ERConstants constants = new ERConstants(er);
+        private static long eventFlag = er.ReadLong(constants.GetEventflagman());
 
-        static BingoSquares()
+        private static bool IsBossDead(int[] offsets, int bitPosition)
         {
-            er = new ERMemoryReader();
-            constants = new ERConstants(er);
+            foreach (var offset in offsets)
+            {
+                long boss = er.GetOffsets(eventFlag, [0x28, offset]);
+                if ((er.ReadByte(boss) & (1 << bitPosition)) != 0)
+                    return true;
+            }
+            return false;
         }
+        private static int KilledBossesCount((int Boss, int Byte, int Count)[] bossesData)
+        {
+            int count = 0;
+            long boss;
+            foreach (var (offset, bitPosition, enemyCount) in bossesData)
+            {
+                boss = er.GetOffsets(eventFlag, [0x28, offset]);
+                if ((er.ReadByte(boss) & (1 << bitPosition)) != 0)
+                    count += enemyCount;
+            }
+            return count;
+        }
+        public static bool LeonineDead() => IsBossDead([0xA7B7F], 7);
+        public static bool RedWolfDead() => IsBossDead([0x15814C], 5);
+        public static bool GodskinApostleDead() => IsBossDead([0xA483A, 0x16310E], 7);
+        public static bool GoldenGodfreyDead() => IsBossDead([0x152DCD], 5);
+        public static bool FiaChampionsDead() => IsBossDead([0x155554], 7);
+        public static bool SewersMohgDead() => IsBossDead([0x15D060], 7);
+        public static bool SpiritLorettaDead() => IsBossDead([0x67A1B], 7);
+        public static bool CommanderOneilDead() => IsBossDead([0xDCB27], 7);
+        public static bool GraftedScionDead() => IsBossDead([0x152098], 7);
+        public static bool SentinelDuoDead() => IsBossDead([0x9B1D6], 7);
+        public static bool CrucibleMisbegottenDuoDead() => IsBossDead([0xED5C1], 7);
+        public static bool ElemerBriarDead() => IsBossDead([0x8AAA7], 7);
+        public static bool PutridCrystalTrioDead() => IsBossDead([0x172FF0], 7);
+        public static bool WormFaceDead() => IsBossDead([0xA483A], 7);
+        public static bool RoyalRevenantDead() => IsBossDead([0x5EA8D], 7);
+        public static bool DragonkinSoldierDead() => IsBossDead([0x1550F2, 0x154C90], 1) || IsBossDead([0x1550F2, 0x154C90], 5);
+        public static bool MagmaWyrmDead() => IsBossDead([0x179DCD, 0x6845C, 0x15DD8F], 7);
+        public static bool FallingstarBeastDead() => IsBossDead([0x17A232, 0x9AE6B], 7);
+        public static bool BlackBladeKindredDead() => IsBossDead([0xEEDAE, 0xDFB01], 7);
+        public static bool OmenkillerDead() => IsBossDead([0x65EC3], 7);
+        public static bool MorgottDead() => IsBossDead([0x152DC7], 7);
+        public static bool AncestorSpiritDead() => IsBossDead([0x156B4D], 7);
+        public static bool RealMohgDead() => IsBossDead([0x155E1E], 7);
+        public static bool ValiantGargoylesDead() => IsBossDead([0x1550EF], 7);
 
-        public static bool LeonineDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0xA7B7F]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
+        public static bool DeathBirdsDead() => IsBossDead([0xA0E1F, 0xB0B0D, 0x77033, 0xB52D4], 7) //Death Birds
+        && (IsBossDead([0x6F1BC, 0xE94D0, 0xD8360], 7) || IsBossDead([0xDC7C2], 5)); //Death Rite Birds
 
-        public static bool RedWolfDead()
+        public static bool CemeteryShadesDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x15814C]);
-            bool flag = (er.ReadByte(boss) & (1 << 5)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x167BC3, 7, 1),
+                (0x1691BC, 7, 1),
+                (0x16BDAE, 7, 1)
+            };
+            return KilledBossesCount(bossesData) >= 2;
         }
-
-        public static bool GodskinApostleDead()
+        public static bool WatchdogsDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long firstApostle = er.GetOffsets(eventflag, [0x28, 0xA483A]);
-            long secondApostle = er.GetOffsets(eventflag, [0x28, 0x16310E]);
-            bool flag = ((er.ReadByte(firstApostle) & (1 << 7)) != 0) ||
-                ((er.ReadByte(secondApostle) & (1 << 7)) != 0);
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x16848D, 7, 1),
+                (0x168028, 7, 1),
+                (0x169621, 7, 1),
+                (0x169A86, 7, 1),
+                (0x16B949, 7, 2)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool GoldenGodfreyDead()
+        public static bool DuelistsDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x152DCD]);
-            bool flag = (er.ReadByte(boss) & (1 << 5)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x17577D, 7, 1),
+                (0x168D57, 7, 1),
+                (0x16B4E4, 7, 1),
+                (0x16CF42, 7, 1)
+            };
+            return KilledBossesCount(bossesData) >= 2;
         }
-        public static bool FiaChampionsDead()
+        public static bool BlackAssassinsDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x155554]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x16AC1A, 7, 1),
+                (0x174EB3, 7, 1),
+                (0x92C89, 7, 1),
+                (0x1691C2, 5, 1)
+            };
+            return KilledBossesCount(bossesData) >= 2;
         }
-        public static bool SewersMohgDead()
+        public static bool CrucibleKnightsDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x15D060]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x151C0D, 5, 1),
+                (0x1550C1, 5, 1),
+                (0x1550C0, 1, 1),
+                (0x1573D7, 0, 1),
+                (0x1573D8, 7, 1),
+                (0xED5C1, 7, 1),
+                (0xA0AB4, 7, 1),
+                (0x16A7B5, 7, 2),
+                (0x155520, 1, 1),
+                (0x152DA1, 7, 1),
+                (0x152DA0, 0, 1),
+                (0x159F49, 7, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool SpiritLorettaDead()
+        public static bool DragonHeartsDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x67A1B]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0xA9001, 7, 1),
+                (0xD3F04, 7, 1),
+                (0xF6F90, 7, 1),
+                (0x179DCD, 7, 1),
+                (0x6845C, 7, 1),
+                (0x15DD8F, 7, 1),
+                (0x5D60B, 7, 1),
+                (0x5E04C, 7, 1),
+                (0x1AA7A2, 7, 1),
+                (0xE9165, 7, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool CommanderOneilDead()
+        public static bool ErdtreeAvatarDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0xDCB27]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0xA85C0, 7, 1),
+                (0x80D6D, 7, 1),
+                (0x550BE, 7, 1),
+                (0xFA2D5, 7, 1),
+                (0x155520, 0, 1),
+                (0x152D93, 2, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool GraftedScionDead()
+        public static bool NightCavalryDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x152098]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0xA936C, 7, 1),
+                (0x158146, 7, 1),
+                (0x8850E, 7, 1),
+                (0xDC7BC, 7, 1),
+                (0x8A066, 7, 1),
+                (0xD6EDE, 7, 1),
+                (0x1ABD9B, 7, 2),
+                (0xF6F96, 5, 1),
+                (0xB0B13, 5, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool SentinelDuoDead()
+        public static bool TibiaMarinerDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x9B1D6]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0xBABB2, 7, 1),
+                (0x88879, 7, 1),
+                (0x81B19, 7, 1),
+                (0xF1D58, 2, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool CrucibleMisbegottenDuoDead()
+        public static bool BellBearingDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0xED5C1]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0xA0E25, 7, 1),
+                (0x77DDF, 7, 1),
+                (0xACA1C, 7, 1),
+                (0xD4CB0, 7, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool ElemerBriarDead()
+        public static bool DuoTrioDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x8AAA7]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x1ABD9B, 7, 1),
+                (0x16B949, 7, 1),
+                (0x16B07F, 7, 1),
+                (0xDCE92, 7, 1),
+                (0xD4945, 7, 1),
+                (0x1719F7, 7, 1),
+                (0x172FF0, 7, 1),
+                (0x179968, 7, 1),
+                (0x9B1D6, 7, 1),
+                (0xED5C1, 7, 1),
+                (0x171E5C, 7, 1),
+                (0x16A7B5, 7, 1),
+                (0x1550EF, 7, 1),
+                (0x175318, 7, 1),
+                (0x174A4E, 7, 1),
+                (0x175BE2, 7, 1),
+                (0x155554, 7, 1),
+                (0x174184, 7, 1),
+                (0x15741D, 5, 1),
+                (0x163579, 5, 1),
+                (0x159BAB, 3, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
-        public static bool PutridCrystalTrioDead()
+        public static bool HorseRidersDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x172FF0]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x1A1B02, 7, 1),
+                (0xA0749, 7, 1),
+                (0x9B1D6, 7, 2),
+                (0xA936C, 7, 1),
+                (0x158146, 7, 1),
+                (0x8850E, 7, 1),
+                (0xDC7BC, 7, 1),
+                (0x8A066, 7, 1),
+                (0xD6EDE, 7, 1),
+                (0x1ABD9B, 7, 2),
+                (0x67A1B, 7, 1),
+                (0xBD821, 7, 1),
+                (0xF6F96, 5, 1),
+                (0xB0B13, 5, 1),
+                (0x158E7B, 5, 1)
+            };
+            return KilledBossesCount(bossesData) >= 5;
         }
-        public static bool WormFaceDead()
+        public static bool TreeBossesDead()
         {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0xA483A]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
+            (int Boss, int Byte, int Count)[] bossesData =
+            {
+                (0x16848D, 7, 1),
+                (0x168028, 7, 1),
+                (0x169621, 7, 1),
+                (0x16B949, 7, 2),
+                (0x169A86, 7, 1),
+                (0xA0749, 7, 1),
+                (0x9B1D6, 7, 2),
+                (0x15B602, 7, 1),
+                (0x16CADD, 7, 1),
+                (0xA85C0, 7, 1),
+                (0x80D6D, 7, 1),
+                (0x550BE, 7, 1),
+                (0xBD821, 7, 1),
+                (0xFA2D5, 5, 1),
+                (0x158E7B, 5, 1),
+                (0x79938, 5, 1)
+            };
+            return KilledBossesCount(bossesData) >= 5;
         }
-        public static bool RoyalRevenantDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x5EA8D]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
-        public static bool DragonkinSoldierDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long firstboss = er.GetOffsets(eventflag, [0x28, 0x1550F2]);
-            long secondboss = er.GetOffsets(eventflag, [0x28, 0x154C90]);
-            bool flag = ((er.ReadByte(firstboss) & (1 << 1)) != 0) ||
-                ((er.ReadByte(secondboss) & (1 << 5)) != 0);
-            return flag;
-        }
-        public static bool MagmaWyrmDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long firstboss = er.GetOffsets(eventflag, [0x28, 0x179DCD]); //Gael Tunnel
-            long secondboss = er.GetOffsets(eventflag, [0x28, 0x6845C]); //Mt. Gelmir
-            long thirdboss = er.GetOffsets(eventflag, [0x28, 0x15DD8F]); //Makar
-
-            bool flag = ((er.ReadByte(firstboss) & (1 << 7)) != 0) ||
-                ((er.ReadByte(secondboss) & (1 << 7)) != 0) ||
-                ((er.ReadByte(thirdboss) & (1 << 7)) != 0);
-            return flag;
-        }
-        public static bool FallingstarBeastDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long firstboss = er.GetOffsets(eventflag, [0x28, 0x17A232]);
-            long secondboss = er.GetOffsets(eventflag, [0x28, 0x9AE6B]);
-            bool flag = ((er.ReadByte(firstboss) & (1 << 7)) != 0) ||
-                ((er.ReadByte(secondboss) & (1 << 7)) != 0);
-            return flag;
-        }
-        public static bool BlackBladeKindredDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long firstboss = er.GetOffsets(eventflag, [0x28, 0xEEDAE]);
-            long secondboss = er.GetOffsets(eventflag, [0x28, 0xDFB01]);
-            bool flag = ((er.ReadByte(firstboss) & (1 << 7)) != 0) ||
-                ((er.ReadByte(secondboss) & (1 << 7)) != 0);
-            return flag;
-        }
-        public static bool OmenkillerDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x65EC3]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
-        public static bool MorgottDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x152DC7]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
-        public static bool AncestorSpiritDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x156B4D]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
-        public static bool RealMohgDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x155E1E]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
-        public static bool ValiantGargoylesDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long boss = er.GetOffsets(eventflag, [0x28, 0x1550EF]);
-            bool flag = (er.ReadByte(boss) & (1 << 7)) != 0;
-            return flag;
-        }
-
         public static bool GodskinNobleKilledWithousStatus()
         {
             long bossaddr = constants.GetCurrentBoss();
@@ -202,7 +267,7 @@
             long currentbossaddr = constants.FindAddrById(currentboss);
             bool check = false;
             bool isdead;
-            while (currentboss == ERConstants.GODSKIN_NOBLE_VOLCANO_PARAM_ID)
+            while (currentboss == (int)ERConstants.BossId.GodskinNobleVolcano)
             {
                 currentboss = er.ReadInt(bossaddr);
                 check = constants.IsStatusEffectUsed(currentbossaddr);
@@ -229,7 +294,7 @@
             int currentAnimation;
             bool isdead;
 
-            while (currentboss == ERConstants.MARGIT_PARAM_ID)
+            while (currentboss == (int)ERConstants.BossId.Margit)
             {
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
                 currentboss = er.ReadInt(bossaddr);
@@ -268,7 +333,7 @@
             long bossaddr = constants.GetCurrentBoss();
             long currentboss = er.ReadInt(bossaddr);
             long currentbossaddr = constants.FindAddrById(currentboss);
-            long nepheliaddr = constants.FindAddrById(ERConstants.NEPHELI_PARAM_ID);
+            long nepheliaddr = constants.FindAddrById((int)ERConstants.BossId.Nepheli);
             bool isnephelihere = er.ReadInt(er.GetOffsets(nepheliaddr, [0x190, 0x18, 0x40])) != -1;
             bool isdead;
             if (!isnephelihere)
@@ -280,7 +345,7 @@
             {
                 Console.WriteLine("Nepheli summoned");
             }
-            while (currentboss == ERConstants.GODRICK_PARAM_ID)
+            while (currentboss == (int)ERConstants.BossId.Godrick)
             {
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
                 currentboss = er.ReadInt(bossaddr);
@@ -309,7 +374,7 @@
                 (3033, 0b0001) //wolves
             };
 
-            while (currentboss == ERConstants.RENALLA_PARAM_ID)
+            while (currentboss == (int)ERConstants.BossId.Renalla)
             {
                 int currentanimation = constants.GetEnemyCurrentAnim(currentbossaddr);
                 currentboss = er.ReadInt(bossaddr);
@@ -349,7 +414,7 @@
             {
                 npcAdressess[i] = constants.FindAddrById(npcs[i]);
             }
-            while (currentboss == ERConstants.RADAHN_PARAM_ID)
+            while (currentboss == (int)ERConstants.BossId.Radahn)
             {
                 currentboss = er.ReadInt(bossaddr);
                 foreach (var npcaddr in npcAdressess)
@@ -377,7 +442,7 @@
             int currentanim = er.ReadInt(constants.GetPlayerAnim());
             long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
 
-            while (currentboss == ERConstants.MIMIC_PARAM_ID)
+            while (currentboss == (int)ERConstants.BossId.Mimic)
             {
                 currentboss = er.ReadInt(bossaddr);
                 currentanim = er.ReadInt(constants.GetPlayerAnim());
@@ -432,7 +497,7 @@
             long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
             int current_weapon;
 
-            while (currentbossid == ERConstants.SOLDIER_OF_GOD_PARAM_ID)
+            while (currentbossid == (int)ERConstants.BossId.SoldierOfGod)
             {
                 currentbossid = er.ReadInt(bossaddr);
                 current_weapon = constants.GetCurrentWeaponId();
@@ -457,7 +522,7 @@
             long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
             int current_weapon;
             Thread.Sleep(5000);
-            while (currentbossid == ERConstants.LIMGRAVE_TREE_SENTINTEL_PARAM_ID)
+            while (currentbossid == (int)ERConstants.BossId.LimgraveTreeSentinel)
             {
                 currentbossid = er.ReadInt(bossaddr);
                 current_weapon = constants.GetCurrentWeaponId();
@@ -483,7 +548,7 @@
             long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
             int current_weapon;
             Thread.Sleep(5000);
-            while (currentbossid == ERConstants.AGHEEL_PARAM_ID)
+            while (currentbossid == (int)ERConstants.BossId.Agheel)
             {
                 currentbossid = er.ReadInt(bossaddr);
                 current_weapon = constants.GetCurrentWeaponId();
@@ -502,487 +567,6 @@
             return false;
         }
 
-        public static bool DeathBirdsDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] deathBirds = [0xA0E1F, 0xB0B0D, 0x77033, 0xB52D4];
-            int[] deathRiteBirds = [0x6F1BC, 0xE94D0, 0xD8360];
-            int count = 0b00;
-            long boss;
-            foreach (var addr in deathBirds)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                {
-                    count |= 0b10;
-                    break;
-                }
-            }
-            foreach (var addr in deathRiteBirds)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                {
-                    count |= 0b01;
-                    break;
-                }
-            }
-            boss = baseAddr + 0xDC7C2;
-            if ((er.ReadByte(boss) & (1 << 5)) != 0)
-                count |= 0b01;
-
-            if (count == 0b11)
-                return true;
-
-            return false;
-        }
-        public static bool CemeteryShadesDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] shades = [0x167BC3, 0x1691BC, 0x16BDAE];
-            int count = 0;
-            long boss;
-            foreach (var addr in shades)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                    count++;
-            }
-
-            if (count >= 2)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-            Console.WriteLine("NO");
-            return false;
-        }
-        public static bool WatchdogsDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0x16848D, 0x168028, 0x169621, 0x169A86, 0x16B949];
-            int count = 0;
-            long boss;
-            foreach (var addr in bosses)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                {
-                    if (addr == 0x16B949) //2 dogs here
-                        count++;
-                    count++;
-                }
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-            Console.WriteLine("NO");
-            return false;
-        }
-        public static bool DuelistsDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0x17577D, 0x168D57, 0x16B4E4, 0x16CF42];
-            int count = 0;
-            long boss;
-            foreach (var addr in bosses)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                    count++;
-            }
-
-            if (count >= 2)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-            Console.WriteLine("NO");
-            return false;
-        }
-        public static bool BlackAssassinsDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0x16AC1A, 0x174EB3, 0x92C89];
-            int count = 0;
-            long boss;
-            foreach (var addr in bosses)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                    count++;
-            }
-
-            boss = baseAddr + 0x1691C2;
-            if ((er.ReadByte(boss) & (1 << 5)) != 0)
-                count++;
-
-            if (count >= 2)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            return false;
-        }
-        public static bool CrucibleKnightsDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0x151C0D, 0x1550C1, 0x1550C0, 0x1573D7, 0x1573D8, 0xED5C1, 0xA0AB4, 0x16A7B5, 0x155520, 0x152DA1, 0x152DA0, 0x159F49];
-            int[] bytes = [5, 5, 1, 0, 7, 7, 7, 7, 1, 7, 0, 7];
-            int count = 0;
-            long boss;
-            for (int i = 0; i < bosses.Length; i++)
-            {
-                boss = baseAddr + bosses[i];
-                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
-                {
-                    //Console.WriteLine(bosses[i].ToString("X8"));
-                    if (bosses[i] == 0x16A7B5) //2 knights here
-                        count++;
-                    count++;
-                }
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            return false;
-
-            /* Замок 151C0D 5
-             * Нокрон 1550C1 5
-             * Горгульи 1550C0 1
-             * Фарум 1573D7 0
-             * Фарум 1573D8 7
-             * ED5C1 7
-             * A0AB4 7
-             * 16A7B5 7  tut dwa
-             * 155520 1
-             * 152DA1 7
-             * 152DA0 0
-             * 159F49 7
-             */
-        }
-        public static bool DragonHeartsDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0xA9001, 0xD3F04, 0xF6F90, 0x179DCD, 0x6845C, 0x15DD8F, 0x5D60B, 0x5E04C, 0x1AA7A2, 0xE9165];
-            int count = 0;
-            long boss;
-            foreach (var addr in bosses)
-            {
-                boss = baseAddr + addr;
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                    count++;
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            return false;
-            /* A9001 7
-             * D3F04 7
-             * F6F90 7
-             * 179DCD 7
-             * 6845C 7
-             * 159B80 7 vulkan ////
-             * 15DD8F 7 makar
-             * 5D60B 7
-             * 5E04C 7
-             * 1AA7A2 7
-             * E9165 7
-             */
-        }
-        public static bool ErdtreeAvatarDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0xA85C0, 0x80D6D, 0x550BE, 0xFA2D5, 0x155520, 0x152D93];
-            int[] bytes = [7, 7, 7, 7, 0, 2];
-            int count = 0;
-            long boss;
-            for (int i = 0; i < bosses.Length; i++)
-            {
-                boss = baseAddr + bosses[i];
-                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
-                    count++;
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            /* A85C0 7
-             * 80D6D 7
-             * 550BE 7
-             * FA2D5 7
-             * 155520 0
-             * 152D93 2
-             */
-            return false;
-        }
-        public static bool NightCavalryDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0xA936C, 0x158146, 0x8850E, 0xDC7BC, 0x8A066, 0xD6EDE, 0x1ABD9B, 0xF6F96, 0xB0B13];
-            int[] bytes = [7, 7, 7, 7, 7, 7, 7, 5, 5];
-            int count = 0;
-            long boss;
-            for (int i = 0; i < bosses.Length; i++)
-            {
-                boss = baseAddr + bosses[i];
-                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
-                {
-                    if (bosses[i] == 0x1ABD9B)
-                        count++;
-                    count++;
-                }
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            /* A936C 7
-             * 158146 7
-             * 8850E 7
-             * DC7BC 7
-             * 8A066 7
-             * D6EDE 7
-             * 1ABD9B 7 //two
-             * F6F96 5
-             * B0B13 5
-             */
-            return false;
-        }
-        public static bool TibiaMarinerDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0xBABB2, 0x88879, 0x81B19, 0xF1D58];
-            int[] bytes = [7, 7, 7, 2];
-            int count = 0;
-            long boss;
-            for (int i = 0; i < bosses.Length; i++)
-            {
-                boss = baseAddr + bosses[i];
-                if ((er.ReadByte(boss) & (1 << bytes[i])) != 0)
-                    count++;
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-
-            /* BABB2 7
-             * 88879 7
-             * 81B19 7
-             * F1D58 2
-             */
-            return false;
-        }
-        public static bool BellBearingDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-
-            int[] bosses = [0xA0E25, 0x77DDF, 0xACA1C, 0xD4CB0];
-            int count = 0;
-            long boss;
-            for (int i = 0; i < bosses.Length; i++)
-            {
-                boss = baseAddr + bosses[i];
-                if ((er.ReadByte(boss) & (1 << 7)) != 0)
-                    count++;
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-
-            return false;
-        }
-        public static bool DuoTrioDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-            var bossesData = new (int Boss, int Bytes)[]
-            {
-                (0x1ABD9B, 7),
-                (0x16B949, 7),
-                (0x16B07F, 7),
-                (0xDCE92, 7),
-                (0xD4945, 7),
-                (0x1719F7, 7),
-                (0x172FF0, 7),
-                (0x179968, 7),
-                (0x9B1D6, 7),
-                (0xED5C1, 7),
-                (0x171E5C, 7),
-                (0x16A7B5, 7),
-                (0x1550EF, 7),
-                (0x175318, 7),
-                (0x174A4E, 7),
-                (0x175BE2, 7),
-                (0x155554, 7),
-                (0x174184, 7),
-                (0x15741D, 5),
-                (0x163579, 5),
-                (0x159BAB, 3)
-            };
-
-            int count = 0;
-            long boss;
-
-            foreach (var (bossValue, bytes) in bossesData)
-            {
-                boss = baseAddr + bossValue;
-                if ((er.ReadByte(boss) & (1 << bytes)) != 0)
-                    count++;
-            }
-
-            if (count >= 3)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            return false;
-        }
-        public static bool HorseRidersDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-            var bossesData = new (int Boss, int Bytes)[]
-            {
-                (0x1A1B02, 7),
-                (0xA0749, 7),
-                (0x9B1D6, 7),
-                (0xA936C, 7),
-                (0x158146, 7),
-                (0x8850E, 7),
-                (0xDC7BC, 7),
-                (0x8A066, 7),
-                (0xD6EDE, 7),
-                (0x1ABD9B, 7),
-                (0x67A1B, 7),
-                (0xBD821, 7),
-                (0xF6F96, 5),
-                (0xB0B13, 5),
-                (0x158E7B, 5)
-            };
-
-            int count = 0;
-            foreach (var (boss, bytes) in bossesData)
-            {
-                long bossAddr = baseAddr + boss;
-                if ((er.ReadByte(bossAddr) & (1 << bytes)) != 0)
-                {
-                    if (boss == 0x9B1D6 || boss == 0x1ABD9B)
-                        count++;
-                    count++;
-                }
-            }
-
-            if (count >= 5)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            return false;
-        }
-        public static bool TreeBossesDead()
-        {
-            long eventflag = er.ReadLong(constants.GetEventflagman());
-            long baseAddr = er.ReadLong(eventflag + 0x28);
-            var bossesData = new (int Boss, int Bytes)[]
-            {
-                (0x16848D, 7),
-                (0x168028, 7),
-                (0x169621, 7),
-                (0x16B949, 7),
-                (0x169A86, 7),
-                (0xA0749, 7),
-                (0x9B1D6, 7),
-                (0x15B602, 7),
-                (0x16CADD, 7),
-                (0xA85C0, 7),
-                (0x80D6D, 7),
-                (0x550BE, 7),
-                (0xFA2D5, 5),
-                (0xBD821, 7),
-                (0x158E7B, 5),
-                (0x79938, 5)
-            };
-
-            int count = 0;
-            foreach (var (boss, bytes) in bossesData)
-            {
-                long bossAddr = baseAddr + boss;
-                if ((er.ReadByte(bossAddr) & (1 << bytes)) != 0)
-                {
-                    if (boss == 0x16B949 || boss == 0x9B1D6)
-                        count++;
-                    count++;
-                }
-            }
-
-            if (count >= 5)
-            {
-                Console.WriteLine("Yes");
-                return true;
-            }
-
-            Console.WriteLine("NO");
-            return false;
-        }
         public static bool RemembranceBossHitless()
         {
             long bossaddr = constants.GetCurrentBoss();
@@ -1051,15 +635,18 @@
             long currentbossaddr = constants.FindAddrById(currentbossid);
             bool isdead;
             int current_weapon;
-            Thread.Sleep(5000);
+            int currentanim;
             while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
             {
+                currentanim = er.ReadInt(constants.GetPlayerAnim());
+
                 current_weapon = constants.GetCurrentWeaponId();
                 currentbossid = er.ReadInt(bossaddr);
                 if (currentbossid != 0)
                     currentbossaddr = constants.FindAddrById(currentbossid);
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
-                if (current_weapon / 1000000 != 1 && current_weapon / 1000000 != 22 && current_weapon!=110000)
+
+                if (currentanim / 10000 % 10 == 3 && current_weapon / 1000000 != 1 && current_weapon / 1000000 != 22 && current_weapon!=110000)
                 {
                     Console.WriteLine("NOT Daggers/claws");
                     return false;
@@ -1102,5 +689,34 @@
             }
             return false;
         }
+        public static bool RemembranceIncantations()
+        {
+            long bossaddr = constants.GetCurrentBoss();
+            int currentbossid = er.ReadInt(bossaddr);
+            long currentbossaddr = constants.FindAddrById(currentbossid);
+            bool isdead;
+            int currentanim;
+            Thread.Sleep(5000);
+            while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
+            {
+                currentbossid = er.ReadInt(bossaddr);
+                currentanim = er.ReadInt(constants.GetPlayerAnim());
+
+                isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
+
+                if ((currentanim / 10000) % 10 == 3)
+                {
+                    Console.WriteLine("Not incantations");
+                    return false;
+                }
+                if (isdead)
+                {
+                    Console.WriteLine("GOD killed");
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }
