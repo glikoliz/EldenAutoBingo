@@ -6,6 +6,11 @@
     <RootNamespace>Elden_Ring_Auto_Bingo</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
+  </ItemGroup>
 
 </Project>
