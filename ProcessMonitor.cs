@@ -26,7 +26,6 @@ namespace Elden_Ring_Auto_Bingo
         public void Update()
         {
             if (IsProcessRunning) return;
-            Console.WriteLine("No process here!");
             Process[] processes = Process.GetProcessesByName(ProcessName);
             CurrentProcess = processes.Length > 0 ? processes[0] : null;
         }
