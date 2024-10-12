@@ -265,7 +265,7 @@
             long bossaddr = constants.GetCurrentBoss();
             long currentboss = er.ReadInt(bossaddr);
             long currentbossaddr = constants.FindAddrById(currentboss);
-            bool check = false;
+            bool check;
             bool isdead;
             while (currentboss == (int)ERConstants.BossId.GodskinNobleVolcano)
             {
@@ -273,14 +273,9 @@
                 check = constants.IsStatusEffectUsed(currentbossaddr);
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
                 if (check)
-                {
                     return false;
-                }
                 else if (isdead)
-                {
-                    Console.WriteLine("Noble was killed without status effects");
                     return true;
-                }
                 Thread.Sleep(1000);
             }
             return false;
@@ -311,19 +306,7 @@
 
                 }
                 if (isdead)
-                {
-                    if (parry_count >= 4)
-                    {
-                        Console.WriteLine("Margit was killed with 4+ parries");
-                        return true;
-                    }
-                    else
-                    {
-                        Console.WriteLine("You killed him without parries");
-                        return false;
-                    }
-
-                }
+                    return parry_count>=4;
                 Thread.Sleep(100);
             }
             return false;
@@ -337,25 +320,14 @@
             bool isnephelihere = er.ReadInt(er.GetOffsets(nepheliaddr, [0x190, 0x18, 0x40])) != -1;
             bool isdead;
             if (!isnephelihere)
-            {
-                Console.WriteLine("Nepheli wasn't summoned");
                 return false;
-            }
-            else
-            {
-                Console.WriteLine("Nepheli summoned");
-            }
             while (currentboss == (int)ERConstants.BossId.Godrick)
             {
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
                 currentboss = er.ReadInt(bossaddr);
                 if (isdead)
-                {
-                    Console.WriteLine("Godrick was killed with Nepheli");
                     return true;
-                }
                 Thread.Sleep(1000);
-
             }
             return false;
         }
@@ -382,17 +354,12 @@
                 foreach (var (animationId, mask) in summonData)
                 {
                     if (currentanimation == animationId && (summons & mask) == 0)
-                    {
                         summons |= mask;
-                    }
                 }
                 if (isdead)
-                {
                     return summons == 0b1111;
-                }
                 Thread.Sleep(500);
             }
-
             return false;
         }
         public static bool RadahnKilledWithoutSummons()
@@ -421,15 +388,10 @@
                 {
                     byte alliance = constants.GetNpcAlliance(npcaddr);
                     if (alliance == 2)
-                    {
                         return false;
-                    }
                 }
                 if (er.ReadByte(isdeadaddr) == 1)
-                {
-                    Console.WriteLine("Radahn killed without summons");
                     return true;
-                }
                 Thread.Sleep(3000);
             }
             return false;
@@ -439,7 +401,7 @@
             long bossaddr = constants.GetCurrentBoss();
             long currentboss = er.ReadInt(bossaddr);
             long currentbossaddr = constants.FindAddrById(currentboss);
-            int currentanim = er.ReadInt(constants.GetPlayerAnim());
+            int currentanim;
             long isdeadaddr = constants.IsBossDeadAddr(currentbossaddr);
 
             while (currentboss == (int)ERConstants.BossId.Mimic)
@@ -456,10 +418,7 @@
                     }
                 }
                 if (er.ReadByte(isdeadaddr) == 1)
-                {
-                    Console.WriteLine("Mimic killed");
                     return true;
-                }
                 Thread.Sleep(500);
             }
             return true;
@@ -480,10 +439,7 @@
                     Thread.Sleep(1000);
                     int bosshp = constants.GetEnemyHP(currentbossaddr);
                     if (prevbosshp > 0 && bosshp == 0)
-                    {
-                        Console.WriteLine("Killed with flask");
                         return true;
-                    }
                 }
                 Thread.Sleep(1000);
             }
@@ -502,15 +458,9 @@
                 currentbossid = er.ReadInt(bossaddr);
                 current_weapon = constants.GetCurrentWeaponId();
                 if (current_weapon != 110000)
-                {
-                    Console.WriteLine("NOT FISTS");
                     return false;
-                }
                 if (er.ReadByte(isdeadaddr) == 1)
-                {
-                    Console.WriteLine("GOD killed");
                     return true;
-                }
             }
             return false;
         }
@@ -582,7 +532,7 @@
                 if (currentbossid != 0)
                     currentbossaddr = constants.FindAddrById(currentbossid);
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
-                if(damageRate!=prevDamageRate && damageRate!=0)
+                if (damageRate != prevDamageRate && damageRate != 0)
                 {
                     Console.WriteLine("Hit");
                     Thread.Sleep(1000);
@@ -646,7 +596,7 @@
                     currentbossaddr = constants.FindAddrById(currentbossid);
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
 
-                if (currentanim / 10000 % 10 == 3 && current_weapon / 1000000 != 1 && current_weapon / 1000000 != 22 && current_weapon!=110000)
+                if (currentanim / 10000 % 10 == 3 && current_weapon / 1000000 != 1 && current_weapon / 1000000 != 22 && current_weapon != 110000)
                 {
                     Console.WriteLine("NOT Daggers/claws");
                     return false;
@@ -675,7 +625,7 @@
                 if (currentbossid != 0)
                     currentbossaddr = constants.FindAddrById(currentbossid);
                 isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
-                if (current_weapon / 1000000 != 40 && current_weapon / 1000000 != 41 && current_weapon /1000000 != 42)
+                if (current_weapon / 1000000 != 40 && current_weapon / 1000000 != 41 && current_weapon / 1000000 != 42)
                 {
                     Console.WriteLine("NOT bow");
                     return false;
