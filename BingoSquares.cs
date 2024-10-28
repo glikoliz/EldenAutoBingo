@@ -6,14 +6,11 @@
         private static ERConstants constants = new ERConstants(er);
         private static long eventFlag = er.ReadLong(constants.GetEventflagman());
 
-        private static bool IsBossDead(int[] offsets, int bitPosition)
+        private static bool IsBossDead(int offset, int bitPosition)
         {
-            foreach (var offset in offsets)
-            {
-                long boss = er.GetOffsets(eventFlag, [0x28, offset]);
-                if ((er.ReadByte(boss) & (1 << bitPosition)) != 0)
-                    return true;
-            }
+            long boss = er.GetOffsets(eventFlag, [0x28, offset]);
+            if ((er.ReadByte(boss) & (1 << bitPosition)) != 0)
+                return true;
             return false;
         }
         private static int KilledBossesCount((int Boss, int Byte, int Count)[] bossesData)
@@ -28,35 +25,40 @@
             }
             return count;
         }
-        public static bool LeonineDead() => IsBossDead([0xA7B7F], 7);
-        public static bool GoldenHippoDead() => IsBossDead([0x477], 7);
-        public static bool MidraDead() => IsBossDead([0x90], 3);
-        public static bool RadahnDead() => IsBossDead([0x8E], 0);
-        public static bool DancingLionDead() => IsBossDead([0x8E], 3) || IsBossDead([0x174F3], 7);
-        public static bool AncientSenessaxDead() => IsBossDead([0x2DCD], 2);
-        public static bool BlackKnightDead() => IsBossDead([0x2DE1], 2) || IsBossDead([0x2DE0], 4);
-        public static bool JoriDead() => IsBossDead([0x91], 6);
-        public static bool LamenterDead() => IsBossDead([0x9F], 2);
-        public static bool DeathKnightDead() => IsBossDead([0x9E], 1) || IsBossDead([0x9E], 0);
-        public static bool MariggaDead() => IsBossDead([0x2DD2], 2);
-        public static bool BloodfiendDead() => IsBossDead([0xA0], 7);
-        public static bool PutrescentKnightDead() => IsBossDead([0x8F], 3);
-        public static bool DryleafDaneDead() => IsBossDead([0x25689], 7); //test this
-        public static bool ScadutreeAvatarDead() => IsBossDead([0x91], 5);
-        public static bool RellanaDead() => IsBossDead([0x47C], 1);
-        public static bool MetyrDead() => IsBossDead([0x478], 4);
-        public static bool MessmerDead() => IsBossDead([0x477], 5);
-        public static bool SentinelDuoDead() => IsBossDead([0x2DDF], 1);
-        public static bool RominaDead() => IsBossDead([0x91], 7);
-        public static bool DragonManDead() => IsBossDead([0xA0], 6);
-        public static bool DeathRiteBirdDead() => IsBossDead([0x1ABA3], 7);
-        public static bool RedBearDead() => IsBossDead([0x2DD9], 3);
-        public static bool FrenzyNPCDead() => IsBossDead([0x3310A], 3);
+        public static bool LeonineDead() => IsBossDead(0xA7B7F, 7);
+        public static bool GoldenHippoDead() => IsBossDead(0x477, 7);
+        public static bool MidraDead() => IsBossDead(0x90, 3);
+        public static bool RadahnDead() => IsBossDead(0x8E, 0);
+        public static bool DancingLionDead() => IsBossDead(0x8E, 3) || IsBossDead(0x174F3, 7);
+        public static bool AncientSenessaxDead() => IsBossDead(0x2DCD, 2);
+        public static bool BlackKnightDead() => IsBossDead(0x2DE1, 2) || IsBossDead(0x2DE0, 4);
+        public static bool JoriDead() => IsBossDead(0x91, 6);
+        public static bool LamenterDead() => IsBossDead(0x9F, 2);
+        public static bool DeathKnightDead() => IsBossDead(0x9E, 1) || IsBossDead(0x9E, 0);
+        public static bool MariggaDead() => IsBossDead(0x2DD2, 2);
+        public static bool BloodfiendDead() => IsBossDead(0xA0, 7);
+        public static bool PutrescentKnightDead() => IsBossDead(0x8F, 3);
+        public static bool DryleafDaneDead() => IsBossDead(0x25689, 7); //test this
+        public static bool ScadutreeAvatarDead() => IsBossDead(0x91, 5);
+        public static bool RellanaDead() => IsBossDead(0x47C, 1);
+        public static bool MetyrDead() => IsBossDead(0x478, 4);
+        public static bool MessmerDead() => IsBossDead(0x477, 5);
+        public static bool SentinelDuoDead() => IsBossDead(0x2DDF, 1);
+        public static bool RominaDead() => IsBossDead(0x91, 7);
+        public static bool DragonManDead() => IsBossDead(0xA0, 6);
+        public static bool DeathRiteBirdDead() => IsBossDead(0x1ABA3, 7);
+        public static bool RedBearDead() => IsBossDead(0x2DD9, 3);
+        public static bool FrenzyNPCDead() => IsBossDead(0x3310A, 3);
+        public static bool LogurBeastClawDead() => IsBossDead(0x1AEE8, 4);
+        public static bool BolsDead() => IsBossDead(0x1BC7C, 1);
+        public static bool CarianKnightDead() => IsBossDead(0x1BC83, 7);
+
+
 
         public static bool RemembranceBossesDead()
         {
             (int Boss, int Byte, int Count)[] bossesData =
-{
+            {
                 (0x8E, 3, 1), //Dancing lion
                 (0x47C, 1, 1), //Rellana
                 (0x8F, 3, 1), //Putrescent
@@ -90,7 +92,7 @@
 {
                 (0x2DD4, 3, 1), //Gravesite ghostflame dragon
                 (0x25431, 3, 1), //Cerulean ghostflame dragon
-                (0x2531E, 7, 1), //scadu ghostflame
+                (0x2531E, 7, 1), //Scadu ghostflame
                 (0x489, 5, 1), //Jagged drake peak
                 (0x2DCD, 2, 1), //Sennessax
                 (0x91, 4, 1), //Bayle
@@ -109,6 +111,20 @@
                 (0x2DCD, 2, 1), //Sennessax
             };
             return KilledBossesCount(bossesData) >= 1;
+        }
+        public static bool BearLionHippoDead()
+        {
+            bool Bear = IsBossDead(0x2DDD, 5) || IsBossDead(0xDB24, 7);
+            bool Lion = IsBossDead(0x8E, 3) || IsBossDead(0x174F3, 7);
+            bool Hippo = IsBossDead(0x477, 7);
+            return Bear && Lion && Hippo;
+        }
+        public static bool GiantHandDead()
+        {
+            long handAddr = constants.FindAddrById(55510093);
+            long handDeadAddr = er.GetOffsets(handAddr, [0x58, 0xC8, 0x24]);
+            bool isDead = er.ReadByte(handDeadAddr) == 1;
+            return isDead;
         }
         public static bool FurnaceGolemsDead()
         {
