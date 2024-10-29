@@ -52,9 +52,49 @@
         public static bool LogurBeastClawDead() => IsBossDead(0x1AEE8, 4);
         public static bool BolsDead() => IsBossDead(0x1BC7C, 1);
         public static bool CarianKnightDead() => IsBossDead(0x1BC83, 7);
-
-
-
+        public static bool LedaDead() => IsBossDead(0x3B9, 6);
+        public static bool DemiSwordsmanDead() => IsBossDead(0x9F, 4); //1ADAF 4 for non-boss
+        public static bool MausoleumsCompleted()        
+        {
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x2DD0, 1, 1), //Rakhasa
+                (0x2DD9, 3, 1), //Red bear
+                (0x16459, 7, 1), //Blackgaol
+                (0x15A18, 3, 1), //Dancer
+            };
+            return KilledBossesCount(bossesData) >= 2;
+        }
+        public static bool GaolsCompleted()        
+        {
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x9F, 2, 1), //Onze
+                (0x9F, 3, 1), //Labirith
+                (0x9F, 4, 1) //Lamenter
+            };
+            return KilledBossesCount(bossesData) >= 2;
+        }
+        public static bool CatacombsCompleted()        
+        {
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x91, 6, 1), //Jori
+                (0x9E, 0, 1), //Death Knight 1
+                (0x9E, 1, 1) //Death Knight 2
+            };
+            return KilledBossesCount(bossesData) >= 2;
+        }
+        public static bool ForgesCompleted()        
+        {
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x1835C1, 7, 1),
+                (0x183E8B, 7, 1),
+                (0x1842F0, 7, 1)
+            };
+            return KilledBossesCount(bossesData) >= 2;
+        }
         public static bool RemembranceBossesDead()
         {
             (int Boss, int Byte, int Count)[] bossesData =
@@ -118,6 +158,20 @@
             bool Lion = IsBossDead(0x8E, 3) || IsBossDead(0x174F3, 7);
             bool Hippo = IsBossDead(0x477, 7);
             return Bear && Lion && Hippo;
+        }
+        public static bool KnightBossesDead()
+        {
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x16459, 7, 1),
+                (0x47C, 1, 1),
+                (0x2DE1, 2, 1),
+                (0x2DE0, 4, 1),
+                (0x9E, 1, 1),
+                (0x9E, 0, 1),
+                (0x8F, 3, 1)
+            };
+            return KilledBossesCount(bossesData) >= 3;
         }
         public static bool GiantHandDead()
         {
