@@ -1,10 +1,13 @@
-﻿namespace Elden_Ring_Auto_Bingo
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace Elden_Ring_Auto_Bingo
 {
     public static class BingoSquares
     {
         private static ERMemoryReader er = new ERMemoryReader(new ERProcessMonitor());
         private static ERConstants constants = new ERConstants(er);
-        private static long eventFlag = er.ReadLong(constants.GetEventflagman());
+        private static long eventFlag = er.ReadLong(constants.GetEventFlagMan());
+        private static long dataMan = er.ReadLong(constants.GetGameDataMan());
 
         private static bool CheckFlag(int offset, int bitPosition)
         {
@@ -208,26 +211,16 @@
             return false;
 
         }
-        public static bool BossKilledWithousStatus()
-        {
-            long bossAddr = constants.GetCurrentBoss();
-            long currentBoss = er.ReadInt(bossAddr);
-            long currentBossAddr = constants.FindAddrById(currentBoss);
-            bool check;
-            bool isDead;
-            while (currentBoss != 0)
-            {
-                currentBoss = er.ReadInt(bossAddr);
-                check = constants.IsStatusEffectUsed(currentBossAddr);
-                isDead = er.ReadByte(constants.IsBossDeadAddr(currentBossAddr)) == 1;
-                if (check)
-                    return false;
-                else if (isDead)
-                    return true;
-                Thread.Sleep(1000);
-            }
-            return false;
-        }
+        public static bool ScaduLvl10() => er.ReadByte(er.GetOffsets(dataMan, [0x08, 0xFC])) >= 10;
+        public static bool ReveredAshLvl5() => er.ReadByte(er.GetOffsets(dataMan, [0x08, 0xFD])) >= 5;
+        public static bool PlayerLvl85() => er.ReadByte(er.GetOffsets(dataMan, [0x08, 0x68])) >= 85;
+        public static bool TreeBurned() => CheckFlag(0x29, 5);
+        public static bool EuporiaAcquired() => CheckFlag(0x17B214, 5);
+        public static bool GoldenBraidAcquired() => CheckFlag(0x2F8FD, 1);
+        public static bool TaylewAcquired() => CheckFlag(0x1842F0, 7);
+        public static bool TrinaSwordAcquired() => CheckFlag(0x17D525, 1);
+        public static bool DiscusAcquired() => CheckFlag(0x17A48, 7);
+        public static bool GayPantsAcquired() => CheckFlag(0x267AC, 3);
 
 
         public static bool FurnaceGolemsDead()
