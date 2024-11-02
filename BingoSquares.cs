@@ -14,7 +14,7 @@ namespace Elden_Ring_Auto_Bingo
             long boss = er.GetOffsets(eventFlag, [0x28, offset]);
             return (er.ReadByte(boss) & (1 << bitPosition)) != 0;
         }
-        private static int KilledBossesCount((int Boss, int Byte, int Count)[] bossesData)
+        private static int CountFlags((int Boss, int Byte, int Count)[] bossesData)
         {
             int count = 0;
             long boss;
@@ -66,7 +66,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x16459, 7, 1), //Blackgaol
                 (0x15A18, 3, 1), //Dancer
             };
-            return KilledBossesCount(bossesData) >= 2;
+            return CountFlags(bossesData) >= 2;
         }
         public static bool GaolsCompleted()        
         {
@@ -76,7 +76,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x9F, 3, 1), //Labirith
                 (0x9F, 4, 1) //Lamenter
             };
-            return KilledBossesCount(bossesData) >= 2;
+            return CountFlags(bossesData) >= 2;
         }
         public static bool CatacombsCompleted()        
         {
@@ -86,7 +86,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x9E, 0, 1), //Death Knight 1
                 (0x9E, 1, 1) //Death Knight 2
             };
-            return KilledBossesCount(bossesData) >= 2;
+            return CountFlags(bossesData) >= 2;
         }
         public static bool ForgesCompleted()        
         {
@@ -96,7 +96,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x183E8B, 7, 1),
                 (0x1842F0, 7, 1)
             };
-            return KilledBossesCount(bossesData) >= 2;
+            return CountFlags(bossesData) >= 2;
         }
         public static bool RemembranceBossesDead()
         {
@@ -114,7 +114,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x477, 5, 1), //Messmmer
                 (0x8E, 0, 1), //Radahn
             };
-            return KilledBossesCount(bossesData) >= 4;
+            return CountFlags(bossesData) >= 4;
         }
         public static bool NpcBossesDead()
         {
@@ -127,7 +127,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x25689, 7, 1), //Dryleaf Dane(test this)
                 (0x9F, 2, 1), //Lamenter
             }; //Leda fight isn't a boss fight
-            return KilledBossesCount(bossesData) >= 3;
+            return CountFlags(bossesData) >= 3;
         }
         public static bool DragonBossesDead()
         {
@@ -140,7 +140,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x2DCD, 2, 1), //Sennessax
                 (0x91, 4, 1), //Bayle
             };
-            return KilledBossesCount(bossesData) >= 3;
+            return CountFlags(bossesData) >= 3;
         }
         public static bool BaseGameBossesDead()
         {
@@ -153,7 +153,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x1ABA3, 7, 1), //Deathrite bird
                 (0x2DCD, 2, 1), //Sennessax
             };
-            return KilledBossesCount(bossesData) >= 1;
+            return CountFlags(bossesData) >= 1;
         }
         public static bool BearLionHippoDead()
         {
@@ -174,7 +174,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x9E, 0, 1),
                 (0x8F, 3, 1)
             };
-            return KilledBossesCount(bossesData) >= 3;
+            return CountFlags(bossesData) >= 3;
         }
         public static bool GiantHandDead()
         {
@@ -193,7 +193,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x174B3, 5, 1),
                 (0x477, 7, 1),
             };
-            return KilledBossesCount(bossesData) >= 2;
+            return CountFlags(bossesData) >= 2;
         }
         public static bool BayleWithIgonDead()
         {
@@ -221,6 +221,30 @@ namespace Elden_Ring_Auto_Bingo
         public static bool TrinaSwordAcquired() => CheckFlag(0x17D525, 1);
         public static bool DiscusAcquired() => CheckFlag(0x17A48, 7);
         public static bool GayPantsAcquired() => CheckFlag(0x267AC, 3);
+        public static bool DevoniaAcquired() => CheckFlag(0x12B83, 7);
+        public static bool RanahOilAcquired() => CheckFlag(0x15B33, 1);
+        public static bool FullGravebirdAcquired()
+        {
+            (int Boss, int Byte, int Count)[] setData =
+            {
+                (0x12112, 3, 1),
+                (0x20613, 3, 1),
+                (0x25EF0, 5, 1),
+                (0x17B68E, 3, 1),
+
+            };
+            return CountFlags(setData) == 4;
+        }
+        public static bool PaintingRewardsAcquired()
+        {
+            (int Boss, int Byte, int Count)[] rewardsData =
+            {
+                (0x300E, 3, 1),
+                (0x300D, 5, 1),
+                (0x300C, 7, 1),
+            };
+            return CountFlags(rewardsData) >= 2;
+        }
 
 
         public static bool FurnaceGolemsDead()
@@ -230,7 +254,7 @@ namespace Elden_Ring_Auto_Bingo
                 (0x2A853, 1, 1),
                 (0x2A852, 3, 1),
             };//TODO
-            return KilledBossesCount(bossesData) >= 5;
+            return CountFlags(bossesData) >= 5;
         }
         public static bool RemembranceBossHitless() //TODO
         {
