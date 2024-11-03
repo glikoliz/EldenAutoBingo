@@ -1,4 +1,6 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using Newtonsoft.Json.Serialization;
+using System.Reflection.Metadata.Ecma335;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Elden_Ring_Auto_Bingo
 {
@@ -223,6 +225,40 @@ namespace Elden_Ring_Auto_Bingo
         public static bool GayPantsAcquired() => CheckFlag(0x267AC, 3);
         public static bool DevoniaAcquired() => CheckFlag(0x12B83, 7);
         public static bool RanahOilAcquired() => CheckFlag(0x15B33, 1);
+        public static bool WaterDrainedFromChurch() => CheckFlag(0xF, 3);
+        public static bool StTrinaTalked() => CheckFlag(0x17D62D, 0);
+        public static bool HealKindredRot() => CheckFlag(0x26B, 0);
+        public static bool ThiolliersDrink()
+        {
+            
+            long addr = constants.GetPlayerAnim();
+            return er.ReadInt(addr) == 17200;
+        }
+
+
+
+        public static bool WasTransformed()
+        {
+            int ok = constants.GetCurrentTransformation();
+            return ok == 1058235609 || ok == 1058032249 || ok == 1057727209;
+        }
+        public static bool Visited5Crosses()
+        {
+            int count = 0;
+            long addr = er.GetOffsets(eventFlag, [0x28, 0x266]);
+            count += Convert.ToString(er.ReadByte(addr), 2).Count(c => c == '1');
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x265, 0, 1),
+                (0x265, 1, 1),
+                (0x267, 5, 1),
+                (0x267, 6, 1),
+                (0x267, 7, 1),
+            };
+            count += CountFlags(bossesData);
+            Console.WriteLine(count);
+            return count >= 5;
+        }
         public static bool FullGravebirdAcquired()
         {
             (int Boss, int Byte, int Count)[] setData =
