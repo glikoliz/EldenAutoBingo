@@ -141,7 +141,13 @@
             long addr = er.GetOffsets(er.ReadLong(er.ERProcess.MainModule.BaseAddress + 0x03B12E30), [0x0, 0x58, 0x18, 0x108, 0x0, 0xA8, 0x1F0]);
             return er.ReadInt(addr);
         }
-
+        public int GetCurrentTransformation()
+        {
+            if (er.ERProcess?.MainModule == null)
+                throw new InvalidOperationException("MainModule is null");
+            long addr = er.GetOffsets(er.ReadLong(er.ERProcess.MainModule.BaseAddress + 0x03D6B7B0), [0x10, 0x94]);
+            return er.ReadInt(addr);
+        }
         public bool FindExplosiveFlaskEffect()
         {
             long worldchrman = er.ReadLong(GetWorldchrman());
