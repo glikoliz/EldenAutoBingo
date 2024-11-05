@@ -234,6 +234,23 @@ namespace Elden_Ring_Auto_Bingo
             long addr = constants.GetPlayerAnim();
             return er.ReadInt(addr) == 17200;
         }
+        public static bool CrucibleAspectsAcquired() => CheckFlag(0x477, 7) && CheckFlag(0x12B56, 7);
+        public static bool MaskHelmHoodAcquired() => CheckFlag(0x17C3FB, 4) && CheckFlag(0x17C85F, 0) && CheckFlag(0x17CCC4, 0);
+        public static bool PerfumerBottlesAcquired()
+        {
+            (int Boss, int Byte, int Count)[] bossesData =
+{
+                (0x1BEB3, 7, 1),
+                (0x18289E, 3, 1),
+                (0x373CA, 7, 1),
+                (0x1FF3B, 7, 1),
+                (0x237F, 3, 1),
+            };
+            return CountFlags(bossesData) >= 4;
+        }
+        public static bool IrisOfGraceGiven() => CheckFlag(0x2766, 5) && CheckFlag(0x2763, 1);
+        public static bool IrisOfOccultationGiven() => CheckFlag(0x2766, 3) && CheckFlag(0x2763, 0);
+        public static bool JolanAnnaSummonAcquired() => CheckFlag(0x2F33E, 3);
 
 
 
