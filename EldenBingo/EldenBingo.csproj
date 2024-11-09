@@ -15,6 +15,7 @@
     <FileVersion>0.15.2</FileVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\EldenBingo.snk</AssemblyOriginatorKeyFile>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
