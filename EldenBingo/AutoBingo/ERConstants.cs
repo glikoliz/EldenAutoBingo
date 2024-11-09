@@ -1,6 +1,12 @@
-﻿namespace Elden_Ring_Auto_Bingo
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EldenBingo.AutoBingo
 {
-    public class ERConstants
+    internal class ERConstants
     {
         private readonly ERMemoryReader er;
         private long? cachedWorldChrMan;
@@ -110,8 +116,8 @@
         public long GetCurrentBoss()
         {
             if (er.ERProcess?.MainModule == null)
-                throw new InvalidOperationException("MainModule is null");
-            return er.GetOffsets(er.ERProcess.MainModule.BaseAddress, [0x03B40820, 0x244]);
+                return 0;
+            return er.GetOffsets((long)er.ERProcess.MainModule.BaseAddress, [0x03B40820, 0x244]);
         }
 
         public long GetEnemyResistances(long enemyaddr)
@@ -137,15 +143,15 @@
         public int GetCurrentWeaponId()
         {
             if (er.ERProcess?.MainModule == null)
-                throw new InvalidOperationException("MainModule is null");
-            long addr = er.GetOffsets(er.ReadLong(er.ERProcess.MainModule.BaseAddress + 0x03B12E30), [0x0, 0x58, 0x18, 0x108, 0x0, 0xA8, 0x1F0]);
+                return 0;
+            long addr = er.GetOffsets(er.ReadLong((long)er.ERProcess.MainModule.BaseAddress + 0x03B12E30), [0x0, 0x58, 0x18, 0x108, 0x0, 0xA8, 0x1F0]);
             return er.ReadInt(addr);
         }
         public int GetCurrentTransformation()
         {
             if (er.ERProcess?.MainModule == null)
-                throw new InvalidOperationException("MainModule is null");
-            long addr = er.GetOffsets(er.ReadLong(er.ERProcess.MainModule.BaseAddress + 0x03D6B7B0), [0x10, 0x94]);
+                return 0;
+            long addr = er.GetOffsets(er.ReadLong((long)er.ERProcess.MainModule.BaseAddress + 0x03D6B7B0), [0x10, 0x94]);
             return er.ReadInt(addr);
         }
         public bool FindExplosiveFlaskEffect()
