@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json.Serialization;
 using System.Reflection.Metadata.Ecma335;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Elden_Ring_Auto_Bingo
+namespace EldenBingo.AutoBingo
 {
-    public static class BingoSquares
+    public static class AutoBingoSquares
     {
         private static ERMemoryReader er = new ERMemoryReader(new ERProcessMonitor());
         private static ERConstants constants = new ERConstants(er);
@@ -28,7 +27,6 @@ namespace Elden_Ring_Auto_Bingo
             }
             return count;
         }
-        public static bool LeonineDead() => CheckFlag(0xA7B7F, 7);
         public static bool GoldenHippoDead() => CheckFlag(0x477, 7);
         public static bool MidraDead() => CheckFlag(0x90, 3);
         public static bool RadahnDead() => CheckFlag(0x8E, 0);
@@ -211,7 +209,6 @@ namespace Elden_Ring_Auto_Bingo
                 Thread.Sleep(200);
             }
             return false;
-
         }
         public static bool ScaduLvl10() => er.ReadByte(er.GetOffsets(dataMan, [0x08, 0xFC])) >= 10;
         public static bool ReveredAshLvl5() => er.ReadByte(er.GetOffsets(dataMan, [0x08, 0xFD])) >= 5;
@@ -273,7 +270,6 @@ namespace Elden_Ring_Auto_Bingo
                 (0x267, 7, 1),
             };
             count += CountFlags(bossesData);
-            Console.WriteLine(count);
             return count >= 5;
         }
         public static bool FullGravebirdAcquired()
@@ -300,51 +296,51 @@ namespace Elden_Ring_Auto_Bingo
         }
 
 
-        public static bool FurnaceGolemsDead()
-        {
-            (int Boss, int Byte, int Count)[] bossesData =
-            {
-                (0x2A853, 1, 1),
-                (0x2A852, 3, 1),
-            };//TODO
-            return CountFlags(bossesData) >= 5;
-        }
-        public static bool RemembranceBossHitless() //TODO
-        {
-            long bossaddr = constants.GetCurrentBoss();
-            int currentbossid = er.ReadInt(bossaddr);
-            long currentbossaddr = constants.FindAddrById(currentbossid);
-            bool isdead;
-            float damageRate = er.ReadFloat(constants.GetPlayerDamageRate());
-            float prevDamageRate = damageRate;
-            while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
-            {
-                damageRate = er.ReadFloat(constants.GetPlayerDamageRate());
-                currentbossid = er.ReadInt(bossaddr);
-                Console.WriteLine(currentbossaddr);
-                isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
-                if (damageRate != prevDamageRate && damageRate != 0)
-                {
-                    Console.WriteLine("Hit");
-                    Thread.Sleep(1000);
-                    return false;
-                }
-                if (isdead)
-                {
-                    if(currentbossid == 52300196 || currentbossid == 52300496)//sunflower
-                    {
-                        currentbossaddr = constants.FindAddrById(currentbossid);
-                        continue;
-                    }
-                    Console.WriteLine("Killed hitless");
-                    return true;
-                }
-                Console.WriteLine(isdead);
-                Thread.Sleep(500);
+        // public static bool FurnaceGolemsDead()
+        // {
+        //     (int Boss, int Byte, int Count)[] bossesData =
+        //     {
+        //         (0x2A853, 1, 1),
+        //         (0x2A852, 3, 1),
+        //     };//TODO
+        //     return CountFlags(bossesData) >= 5;
+        // }
+        // public static bool RemembranceBossHitless() //TODO
+        // {
+        //     long bossaddr = constants.GetCurrentBoss();
+        //     int currentbossid = er.ReadInt(bossaddr);
+        //     long currentbossaddr = constants.FindAddrById(currentbossid);
+        //     bool isdead;
+        //     float damageRate = er.ReadFloat(constants.GetPlayerDamageRate());
+        //     float prevDamageRate = damageRate;
+        //     while (ERConstants.REMEMBRANCE_BOSSES_PARAM_ID.Contains(currentbossid))
+        //     {
+        //         damageRate = er.ReadFloat(constants.GetPlayerDamageRate());
+        //         currentbossid = er.ReadInt(bossaddr);
+        //         Console.WriteLine(currentbossaddr);
+        //         isdead = er.ReadByte(constants.IsBossDeadAddr(currentbossaddr)) == 1;
+        //         if (damageRate != prevDamageRate && damageRate != 0)
+        //         {
+        //             Console.WriteLine("Hit");
+        //             Thread.Sleep(1000);
+        //             return false;
+        //         }
+        //         if (isdead)
+        //         {
+        //             if(currentbossid == 52300196 || currentbossid == 52300496)//sunflower
+        //             {
+        //                 currentbossaddr = constants.FindAddrById(currentbossid);
+        //                 continue;
+        //             }
+        //             Console.WriteLine("Killed hitless");
+        //             return true;
+        //         }
+        //         Console.WriteLine(isdead);
+        //         Thread.Sleep(500);
 
-            }
-            return false;
-        }
+        //     }
+        //     return false;
+        // }
     }
 }//2F00A 3 npc in metyr location
  //524200190
