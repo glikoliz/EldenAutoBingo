@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Elden_Ring_Auto_Bingo
+namespace EldenBingo.AutoBingo
 {
-    public class ERMemoryReader
+    internal class ERMemoryReader
     {
         [Flags]
         public enum ProcessAccessFlags : uint
@@ -31,7 +35,7 @@ namespace Elden_Ring_Auto_Bingo
             processMonitor = monitor;
             processMonitor.ProcessChanged += OnProcessChanged;
             UpdateProcessHandle();
-            processMonitor.Update();
+            processMonitor.UpdateProcess();
         }
 
         private void OnProcessChanged(object? sender, EventArgs e)
