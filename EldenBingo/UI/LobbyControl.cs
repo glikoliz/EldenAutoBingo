@@ -2,6 +2,7 @@
 using EldenBingoCommon;
 using Microsoft.VisualBasic.ApplicationServices;
 using Neto.Shared;
+using EldenBingo.AutoBingo;
 
 namespace EldenBingo.UI
 {
@@ -12,6 +13,7 @@ namespace EldenBingo.UI
         private MatchStatus _lastMatchStatus;
         private bool _lastPaused;
         private System.Timers.Timer? _timer;
+        private BingoAutoChecker? _autoChecker;
 
         public LobbyControl() : base()
         {
@@ -27,6 +29,8 @@ namespace EldenBingo.UI
 
             SizeChanged += lobbyControl_SizeChanged;
             splitContainer1.Panel1.SizeChanged += bingoPanel_SizeChanged;
+
+            _autoCheckerButton.Click += AutoCheckerButton_Click;
         }
 
         public static UserInRoom? CurrentlyOnBehalfOfUser
@@ -556,6 +560,51 @@ namespace EldenBingo.UI
             {
                 updateMatchLog(ex.Message, Color.Red, false);
             }
+        }
+
+        private void AutoCheckerButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Client?.BingoBoard == null || Client.Room?.Match?.MatchStatus != MatchStatus.Running)
+                {
+                    MessageBox.Show("Game is not running or board is not initialized",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (_autoChecker?.IsRunning != true)
+                {
+                    if (_autoChecker == null)
+                    {
+                        _autoChecker = new BingoAutoChecker(Client);
+                        _autoChecker.OnError += AutoChecker_OnError;
+                    }
+                    _autoChecker.Start();
+                    _autoCheckerButton.Text = "Stop AutoCheck";
+                }
+                else
+                {
+                    _autoChecker.Stop();
+                    _autoCheckerButton.Text = "Start AutoCheck";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"AutoCheck error: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void AutoChecker_OnError(object? sender, string message)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(() => AutoChecker_OnError(sender, message));
+                return;
+            }
+            MessageBox.Show(message, "AutoCheck Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            _autoCheckerButton.Text = "Start AutoCheck";
         }
     }
 }
