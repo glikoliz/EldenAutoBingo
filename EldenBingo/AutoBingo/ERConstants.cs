@@ -223,5 +223,31 @@ namespace EldenBingo.AutoBingo
             (int)BossId.Bayle, (int)BossId.Lion, (int)BossId.Rellana, (int)BossId.Messmer1, (int)BossId.Messmer2, (int)BossId.Gay, (int)BossId.Sunflower1, (int)BossId.Sunflower2, (int)BossId.Sunflower3,
         };
 
+        public bool CheckFlag(int offset, int bitPosition)
+        {
+            long eventFlag = er.ReadLong(GetEventFlagMan());
+            long boss = er.GetOffsets(eventFlag, [0x28, offset]);
+            return (er.ReadByte(boss) & (1 << bitPosition)) != 0;
+        }
+
+        public int CountFlags((int Boss, int Byte)[] bossesData)
+        {
+            return CountFlags(bossesData.Select(x => (x.Boss, x.Byte, 1)).ToArray());
+        }
+
+        public int CountFlags((int Boss, int Byte, int Count)[] bossesData)
+        {
+            long eventFlag = er.ReadLong(GetEventFlagMan());
+            int count = 0;
+            long boss;
+            foreach (var (offset, bitPosition, enemyCount) in bossesData)
+            {
+                boss = er.GetOffsets(eventFlag, [0x28, offset]);
+                if ((er.ReadByte(boss) & (1 << bitPosition)) != 0)
+                    count += enemyCount;
+            }
+            return count;
+        }
+
     }
 }
