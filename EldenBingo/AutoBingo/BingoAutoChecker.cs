@@ -76,6 +76,7 @@ namespace EldenBingo.AutoBingo
                 OnError?.Invoke(this, "Cannot start: Elden Ring process not found");
                 return;
             }
+            ValidateSquares();
 
             _isRunning = true;
             _checkTimer.Start();
@@ -162,6 +163,24 @@ namespace EldenBingo.AutoBingo
             {
                 SquareText = squareText;
                 Completed = completed;
+            }
+        }
+
+        private void ValidateSquares()
+        {
+            if (_client.BingoBoard == null) return;
+
+            var implementedSquares = _squareMethods.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var bingoSquares = _client.BingoBoard.Squares.Select(s => s.Text);
+            
+            var missingSquares = bingoSquares.Where(square => !implementedSquares.Contains(square)).ToList();
+
+            if (missingSquares.Any())
+            {
+                var errorMessage = $"WARNING: {missingSquares.Count} bingo squares are not implemented:\n" +
+                    string.Join("\n", missingSquares.Select(s => $"- {s}"));
+                Debug.WriteLine(errorMessage);
+                OnError?.Invoke(this, errorMessage);
             }
         }
     }
