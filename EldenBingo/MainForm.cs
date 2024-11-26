@@ -275,6 +275,23 @@ namespace EldenBingo
             }
         }
 
+        private async void _changeTeamButton_Click(object sender, EventArgs e)
+        {
+            if (_client.LocalUser == null)
+                return;
+
+            var form = new ChangeTeamForm();
+            form.TopMost = true;
+
+            var teamBefore = _client.LocalUser.Team;
+            form.Team = teamBefore;
+
+            if (form.ShowDialog(this) == DialogResult.OK && form.Team != teamBefore)
+            {
+                await _client.SendPacketToServer(new Packet(new ClientRequestTeamChange(form.Team)));
+            }
+        }
+
         private void _openMapButton_Click(object sender, EventArgs e)
         {
             try
@@ -402,9 +419,12 @@ namespace EldenBingo
 
         private void userCheckedSquare(ClientModel? _, ServerUserChecked userCheckedSquareArgs)
         {
-            if (Properties.Settings.Default.PlaySounds && userCheckedSquareArgs.TeamChecked.HasValue)
+            if (!Properties.Settings.Default.PlaySounds)
+                return;
+            //Only play sound if the team checking is now present in the square
+            if (userCheckedSquareArgs.TeamsChecked.Contains(userCheckedSquareArgs.Team))
             {
-                if (userCheckedSquareArgs.TeamChecked.HasValue && userCheckedSquareArgs.TeamChecked.Value == _client?.LocalUser?.Team)
+                if (userCheckedSquareArgs.Team == _client?.LocalUser?.Team)
                     _sounds.PlaySound(SoundType.SquareClaimedOwn);
                 else
                     _sounds.PlaySound(SoundType.SquareClaimedOther);
@@ -801,10 +821,12 @@ namespace EldenBingo
                 _createLobbyButton.Visible = !inRoom;
                 _joinLobbyButton.Visible = !inRoom;
                 _leaveRoomButton.Visible = inRoom;
+                _changeTeamButton.Visible = inRoom;
 
                 _createLobbyButton.Enabled = connected;
                 _joinLobbyButton.Enabled = connected;
                 _leaveRoomButton.Enabled = connected;
+                _changeTeamButton.Enabled = connected;
             }));
         }
     }

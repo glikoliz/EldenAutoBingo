@@ -7,6 +7,7 @@ namespace EldenBingo.UI
         public GameSettingsControl()
         {
             InitializeComponent();
+            fillBoardSizeList();
             fillClassList();
             updateEnabling();
             _randomSeedUpDown.ValueChanged += (o, e) => SeedChanged?.Invoke();
@@ -33,6 +34,7 @@ namespace EldenBingo.UI
                 }
                 return new BingoGameSettings(
                     BoardSize,
+                    _lockoutCheckBox.Checked,
                     _classLimitCheckBox.Checked,
                     classSet,
                     Convert.ToInt32(_numClassesUpDown.Value),//Number of classes to pick
@@ -45,6 +47,7 @@ namespace EldenBingo.UI
             set
             {
                 BoardSize = value.BoardSize;
+                _lockoutCheckBox.Checked = value.Lockout;
                 for (int i = 0; i < _classesListBox.Items.Count; i++)
                 {
                     _classesListBox.SetItemChecked(i, false);
@@ -61,6 +64,14 @@ namespace EldenBingo.UI
                 _bonusPointsUpDown.Value = value.PointsPerBingoLine;
                 updateEnabling();
             }
+        }
+
+        private void fillBoardSizeList()
+        {
+            for(int i = BingoConstants.BoardSizeMin; i <= BingoConstants.BoardSizeMax; ++i)
+            {
+                _boardSizeComboBox.Items.Add($"{i}x{i}");
+            };
         }
 
         private void fillClassList()

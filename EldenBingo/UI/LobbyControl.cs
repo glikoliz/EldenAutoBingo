@@ -1,6 +1,5 @@
 ﻿using EldenBingo.Net;
 using EldenBingoCommon;
-using Microsoft.VisualBasic.ApplicationServices;
 using Neto.Shared;
 using EldenBingo.AutoBingo;
 
@@ -69,6 +68,7 @@ namespace EldenBingo.UI
             Client.AddListener<ServerUserChat>(userChat);
             Client.AddListener<ServerBingoAchievedUpdate>(bingoAchieved);
             Client.AddListener<ServerTeamNameChanged>(teamNameChanged);
+            Client.AddListener<ServerUserChangedTeam>(userChangedTeam);
 
             Client.AddListener<ServerBroadcastMessage>(serverMessage);
         }
@@ -109,10 +109,10 @@ namespace EldenBingo.UI
                 var user = Client.Room.GetUser(userCheckedArgs.UserGuid);
                 var playerName = user?.Nick ?? "Unknown";
                 Color? playerColor = user?.ColorBright;
-                Color? checkColor = userCheckedArgs.TeamChecked.HasValue ? BingoConstants.GetTeamColorBright(userCheckedArgs.TeamChecked.Value) : playerColor;
+                Color? checkColor = userCheckedArgs.Team > -1 ? BingoConstants.GetTeamColorBright(userCheckedArgs.Team) : playerColor;
 
                 var square = Client.BingoBoard.Squares[userCheckedArgs.Index];
-                updateMatchLog(new[] { playerName, square.Checked ? "marked" : "unmarked", square.Text },
+                updateMatchLog(new[] { playerName, square.IsChecked(userCheckedArgs.Team) ? "marked" : "unmarked", square.Text },
                                new Color?[] { playerColor, null, checkColor }, true);
             }
         }
@@ -205,6 +205,24 @@ namespace EldenBingo.UI
                     updateMatchLog(
                         new string[] { user.Nick, $"changed name of", teamNameChanged.TeamColorName, "to", teamNameChanged.Name },
                         new Color?[] { BingoConstants.GetTeamColorBright(user.Team), null, teamColor, null, teamColor },
+                        true);
+                }
+            }
+        }
+
+        private void userChangedTeam(ClientModel? model, ServerUserChangedTeam teamChanged)
+        {
+            if (Client?.Room != null)
+            {
+                var user = Client.Room.GetUser(teamChanged.UserGuid);
+                if (user != null)
+                {
+                    var oldTeamColor = BingoConstants.GetTeamColorBright(user.Team);
+                    var newTeamColor = BingoConstants.GetTeamColorBright(teamChanged.Team);
+                    user.Team = teamChanged.Team;
+                    updateMatchLog(
+                        new string[] { user.Nick, $"changed team to", teamChanged.TeamColorName },
+                        new Color?[] { oldTeamColor, null, newTeamColor },
                         true);
                 }
             }
