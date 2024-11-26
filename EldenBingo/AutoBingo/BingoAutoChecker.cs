@@ -103,9 +103,10 @@ namespace EldenBingo.AutoBingo
                 return;
             }
 
-            if (_client.BingoBoard == null || _client.Room?.Match?.MatchStatus != MatchStatus.Running) return;
+            if (_client.BingoBoard == null || _client.Room?.Match?.MatchStatus != MatchStatus.Running || _client.LocalUser == null) return;
 
-            var uncheckedSquares = _client.BingoBoard.Squares.Where(square => !square.Checked);
+            var uncheckedSquares = _client.BingoBoard.Squares
+                .Where(square => !square.IsChecked(_client.LocalUser.Team));
 
             foreach (var square in uncheckedSquares)
             {
@@ -117,7 +118,7 @@ namespace EldenBingo.AutoBingo
                         if (!_lastStates.ContainsKey(methodInfo.Name) || _lastStates[methodInfo.Name] != result)
                         {
                             _lastStates[methodInfo.Name] = result;
-                            if (result && _client.LocalUser != null)
+                            if (result)
                             {
                                 var checkPacket = new Packet(new ClientTryCheck(
                                     Array.IndexOf(_client.BingoBoard.Squares, square),
