@@ -20,6 +20,7 @@ namespace EldenBingo.AutoBingo
         private bool _isDisposed;
         private bool _isRunning;
         private readonly Dictionary<string, MethodInfo> _squareMethods;
+        private readonly Dictionary<string, Task> _runningTasks = new Dictionary<string, Task>();
 
         public event EventHandler<AutoCheckEventArgs>? OnSquareChecked;
         public event EventHandler<string>? OnError;
@@ -98,7 +99,6 @@ namespace EldenBingo.AutoBingo
             if (!_processMonitor.IsProcessRunning)
             {
                 Stop();
-
                 OnError?.Invoke(this, "Lost connection to Elden Ring process");
                 return;
             }
@@ -114,17 +114,45 @@ namespace EldenBingo.AutoBingo
                 {
                     try
                     {
-                        bool result = (bool)methodInfo.Invoke(null, null)!;
-                        if (!_lastStates.ContainsKey(methodInfo.Name) || _lastStates[methodInfo.Name] != result)
+                        bool isAsync = methodInfo.GetCustomAttribute<AutoBingoSquares.AsyncBingoSquareAttribute>() != null;
+                        
+                        if (isAsync)
                         {
-                            _lastStates[methodInfo.Name] = result;
-                            if (result)
+                            if (_runningTasks.ContainsKey(methodInfo.Name)) continue;
+                            
+                            var task = (Task<bool>)methodInfo.Invoke(null, null)!;
+                            _runningTasks[methodInfo.Name] = task;
+                            
+                            bool result = await task;
+                            _runningTasks.Remove(methodInfo.Name);
+
+                            if (!_lastStates.ContainsKey(methodInfo.Name) || _lastStates[methodInfo.Name] != result)
                             {
-                                var checkPacket = new Packet(new ClientTryCheck(
-                                    Array.IndexOf(_client.BingoBoard.Squares, square),
-                                    _client.LocalUser.Guid));
-                                await _client.SendPacketToServer(checkPacket);
-                                OnSquareChecked?.Invoke(this, new AutoCheckEventArgs(square.Text, true));
+                                _lastStates[methodInfo.Name] = result;
+                                if (result)
+                                {
+                                    var checkPacket = new Packet(new ClientTryCheck(
+                                        Array.IndexOf(_client.BingoBoard.Squares, square),
+                                        _client.LocalUser.Guid));
+                                    await _client.SendPacketToServer(checkPacket);
+                                    OnSquareChecked?.Invoke(this, new AutoCheckEventArgs(square.Text, true));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bool result = (bool)methodInfo.Invoke(null, null)!;
+                            if (!_lastStates.ContainsKey(methodInfo.Name) || _lastStates[methodInfo.Name] != result)
+                            {
+                                _lastStates[methodInfo.Name] = result;
+                                if (result)
+                                {
+                                    var checkPacket = new Packet(new ClientTryCheck(
+                                        Array.IndexOf(_client.BingoBoard.Squares, square),
+                                        _client.LocalUser.Guid));
+                                    await _client.SendPacketToServer(checkPacket);
+                                    OnSquareChecked?.Invoke(this, new AutoCheckEventArgs(square.Text, true));
+                                }
                             }
                         }
                     }
