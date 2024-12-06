@@ -14,6 +14,11 @@ namespace EldenBingo.AutoBingo
                 SquareName = squareName;
             }
         }
+        [AttributeUsage(AttributeTargets.Method)]
+        public class AsyncBingoSquareAttribute : BingoSquareAttribute
+        {
+            public AsyncBingoSquareAttribute(string squareName) : base(squareName) { }
+        }
         private static ERMemoryReader er;
         private static ERConstants constants;
         private static ERProcessMonitor processMonitor;
@@ -241,8 +246,8 @@ namespace EldenBingo.AutoBingo
             };
             return constants.CountFlags(bossesData) >= 2;
         }
-        [BingoSquare("Kill Bayle while summoning Igon")]
-        public static bool BayleWithIgonDead()
+        [AsyncBingoSquare("Kill Bayle while summoning Igon")]
+        public static async Task<bool> BayleWithIgonDead()
         {
             long bossAddr = constants.GetCurrentBoss();
             int currentBossId = er.ReadInt(bossAddr);
@@ -252,8 +257,8 @@ namespace EldenBingo.AutoBingo
             {
                 currentBossId = er.ReadInt(bossAddr);
                 if (er.ReadByte(isDeadAddr) == 1)
-                    return constants.CheckFlag(0xC04E6, 7); //check if igon was summoned 
-                Thread.Sleep(200);
+                    return constants.CheckFlag(0xC04E6, 7);
+                await Task.Delay(200);
             }
             return false;
         }
@@ -381,4 +386,3 @@ namespace EldenBingo.AutoBingo
 
     }
 }
- 
